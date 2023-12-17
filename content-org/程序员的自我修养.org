@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID:       8bebe1df-2f93-4774-8cfc-1591059c9342
+:END:
+#+title: 程序员的自我修养（笔记）
+* 编译
+** 编译器前端
+*** 预处理
+展开宏和 ~#include~ 语句，同时要保留 ~#pargma~ 语句。
+*** 词法(lexical)分析
+将语句转化成 token 的列表，有通用的工具 lex
+*** 语法(syntax)分析
+将 token 列表转化成语法树，有通用的工具 yacc
+*** 语义(semantic)分析
+对语法树的内容进行分析，进行静态类型检查。并做类型的标记，在发现类型错误的时候进行报错。
+
+- 如何进行类型转换如 int 强转 float ？
+  - 在语法树中加入『转换节点』
+** 中间代码(Intermidiate Code)，及其优化
+常见的中间代码形式有：三地址码，P-代码。比如说三地址码就是 ~z = x op y~ 的形式，一个语句涉及到三个地址，所以称三地址码。
+
+有了三地址码，我们就可以对一些能够在编译时就能够确定的值直接确定下来了。比如说 ~x = 1 + 2 + 3~ ，就可以直接优化成 ~x = 6~, 下面是三地址码形式及其优化：
+
+#+begin_example
+t1 = 1 + 2
+x  = t1 + 3
+#+end_example
+
+发现 t1 的右边是可以直接计算的，于是进行优化计算，并将结果代入后发现此时 x 也可以直接计算了，于是有：
+
+#+begin_example
+x = 6
+#+end_example
+
+正因为有了中间代码，于是就可以将编译器分成编译器前端和编译器后端。
+** 编译器后端
+后端做目标代码的生成，及目标代码的优化。比如说将乘以整数的乘法使用移位操作实现，比如选择合适的寻址方式，删除不必要的指令等。
+* 链接
+编译出来的目标代码中可能会含有 ~arr[index]~ 这样的代码。如果 arr 和 index 都是在这个文件内的，编译器可以为它分配空间（在 .bss 或者 .data 段）中。
+
+但是如果它们是被 include 语句引入的，只有它的声明而没有它的定义。则它们的汇编代码将只做一个记号，它们的地址只有在链接的时候才能确定。
+
+链接过程包括了地址和空间分配、符号决议和重定位。比如说有这么一句汇编指令
+
+#+begin_src asm
+   MOV $0x2a, var
+#+end_src
+
+则其编译出的指令可能为
+
+#+begin_example
+C705 00000000 2a000000
+#+end_example
+
+其中 00000000 即是 var 的临时的地址。并且将这个 00000000 的位置写入待重定位的表，附在 obj 文件中。等待链接过程查表并将 var 的实际地址修正。
+* 目标文件
+** Extern C 语法
+什么时候会使用 extern C 语法？
+- 在一个头文件同时可能被 C 和 C++ include 的时候。
+
+为什么要用 extern C 语法？
+- 简而言之：因为 C 与 C++ 对于符号的处理之不同，在 ELF 文件的 .syntab 中，C 语言将函数名保持原样，而 C++ 则会将函数名扩展成函数签名的形式。
+- 详细解释：
+  - 设想有如下这么一个 C 语言库
+    #+begin_src c
+// foo.h
+float foo(float a, float b);
+    #+end_src
+
+    #+begin_src c
+// foo.c
+float foo(float a, float b)
+{
+    return a + b;
+}
+    #+end_src
+  - 现在将 foo 安装到系统中，则 ~libfoo.so~ 或者 ~libfoo.a~ 里面（注意它们都是 ELF 文件！！！）， foo 函数的 =符号= 在 =.syntab= 里面，是
+    #+begin_example
+❯ readelf -s foo.o
+
+Symbol table '.symtab' contains 4 entries:
+   Num:    Value          Size Type    Bind   Vis      Ndx Name
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND
+     1: 0000000000000000     0 FILE    LOCAL  DEFAULT  ABS foo.c
+     2: 0000000000000000     0 SECTION LOCAL  DEFAULT    1 .text
+     3: 0000000000000000    26 FUNC    GLOBAL DEFAULT    1 foo
+    #+end_example
+
+    注意 C 编译器并未在编译出的目标文件中，对我们函数的符号做任何的改动。
+
+  - 我们现在编写一个 C++ 函数，来 include 刚刚的这个函数。看看会发生什么事情：
+    #+begin_src C++
+// cp.cpp
+#include "foo.h"
+int main () {
+    float a = 10.0, b = 5.0;
+
+    c = foo(a, b);
+}
+    #+end_src
+
+    然后尝试 ~gcc foo.o cp.cpp~, 得到如下结果：
+
+    #+begin_example
+/usr/bin/ld: /tmp/cca5VEcI.o: in function `main':
+cp.cpp:(.text+0x32): undefined reference to `foo(float, float)'
+collect2: error: ld returned 1 exit status
+    #+end_example
+
+  - 我们对 ~gcc -c cp.o~ 的结果做如下的分析：
+
+    #+begin_example
+❯ readelf -s cp.o
+
+Symbol table '.symtab' contains 6 entries:
+   Num:    Value          Size Type    Bind   Vis      Ndx Name
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND
+     1: 0000000000000000     0 FILE    LOCAL  DEFAULT  ABS cp.cpp
+     2: 0000000000000000     0 SECTION LOCAL  DEFAULT    1 .text
+     3: 0000000000000000     0 SECTION LOCAL  DEFAULT    5 .rodata
+     4: 0000000000000000    68 FUNC    GLOBAL DEFAULT    1 main
+     5: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT  UND _Z3fooff
+    #+end_example
+
+    可以发现函数签名是 ~_Z3fooff~, 而不是 GCC 编译出来的 ~foo~ 。还可以发现，Ndx （符号所在段表标号）一栏，它的值是 UND, 表示它尚未被定义，不在任何段中，需要在链接时确定其地址。
+
+  - 如果想要 ~gcc foo.o cp.cpp~ 能正确地得到结果，有两种选择：
+
+    1. 改 ~foo.h~, 改成
+       #+begin_src c
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+float foo(float a, float b);
+
+#ifdef __cplusplus
+}
+#endif
+       #+end_src
+
+    2. 改 ~cp.cpp~, 改成
+
+       #+begin_src cpp
+// cp.cpp
+extern "C" {
+#include "foo.h"
+}
+int main () {
+    float a = 10.0, b = 5.0;
+
+    c = foo(a, b);
+}
+       #+end_src
+
+  - 此时再 ~readelf~, 则可以得到结果：
+
+    #+begin_example
+❯ readelf -s cp.o
+
+Symbol table '.symtab' contains 6 entries:
+   Num:    Value          Size Type    Bind   Vis      Ndx Name
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND
+     1: 0000000000000000     0 FILE    LOCAL  DEFAULT  ABS cp.cpp
+     2: 0000000000000000     0 SECTION LOCAL  DEFAULT    1 .text
+     3: 0000000000000000     0 SECTION LOCAL  DEFAULT    5 .rodata
+     4: 0000000000000000    68 FUNC    GLOBAL DEFAULT    1 main
+     5: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT  UND foo
+    #+end_example
+
+    可见，在 foo 使用了 C 的符号方式。
+** 强符号与弱符号
+一般来说，未初始化者为弱符号，初始化者为强符号。
+
+问题是：
+#+begin_src cpp
+__attribute__((weak)) int a;
+int main()
+{
+    printf("A is: %d\n", a);
+}
+#+end_src
+
+如此会报错，我的估计是：这个 annotation 和库有关系而需要更多的深思。
+** 强引用与弱引用 :card:
+:PROPERTIES:
+:ANKI_NOTE_HASH: 214b60bf82341f9632b9542d1863bac3
+:ANKI_NOTE_ID: 1702660495931
+:END:
+将一个函数声明为弱引用，则不会在编译的时候报错。
+
+- 可是，要想编译的时候不报错，只需要提供函数的签名就好了呀（即只需要声明，不需要实现）。
+- 也就是说，只有声明就是弱引用，而有声明和定义则为强引用？
+* 静态链接过程
+实际在链接的时候，首先需要将不同的 .obj 文件合并成同一个文件。最常见的做法，是将同名或者相似的段进行合并，并且为其分配空间。也将 .bss 段合并。
+
+** 为 .bss 段分配的空间意味着什么？
+因为 .data 与 .text 都是实际上已经有值的，所以链接器不仅仅需要在这个最后可执行的 ELF 文件里面为 .data 与 .text 分配（磁盘）空间，而且需要在为它们在（虚拟地址）空间。
+
+而 .bss 段则因为没有初始化的值，所以只需要虚拟地址空间就好了。
+
+** 在 .bss 文件里面，还存在着一些符号的『所在段』被设置成 COMMON, 这是因为强弱符号的存在
+- 书上说『如果同时有多个弱符号存在，则会取所占空间最大者作为最终其占用空间』
+- 将全局的未初始化变量设置成 COMMON, 不为其分配虚拟内存地址空间。而在最终链接的时候，能够综合所有的被链接的内容（“取所占空间最大者”），为其分配最终的虚拟地址空间。
+
+*** 为什么我观察不到 COMMON 段？
+- 现在的 GCC 版本默认关闭了这一特性，不再使用 COMMON 段。
+- 弱符号的相互覆盖实际实际上将会导致很多的隐匿的 BUG 的出现。默认禁用 ~-fcommon~ 以默认执行更加严格的 C 标准。
+
+*** 如何启用 COMMON 段？
+- 只需要在编译的时候加入 ~-fcommon~ 就好了。
+* 在静态链接过程中，编译器对 C++ 的处理
+** 模版问题
+对于模版代码，如果同一个模版被实例化成多种不同的类型，必然会生成许多重复的代码。最简单的方法就是直接将它们全部保留下来，但是会出现空间浪费，地址易出错，指令运行效率较低（因为存在 Cache）等问题。
+
+解决方法：
+1. 针对同样的参数进行实例化的模版，都起同样的名字。
+2. 将他们放到单独的段里面，比如 GCC 就会将这种类型的段命名为 .gnu.linkonce.[name] ，其中 [name] 是这一段的名称
+3. 在链接的时候，只链接同样的名字的段一次。
+
+
+但是仍然存在的问题：
+1. 如若实例化模版的两份代码文件，采用了不同的编译器版本来编译。他们同样名称的段，将会拥有不同的内容，而这将会触发编译器的一次警告，然后随机采用一个副本作为最终的版本。
+** 构造与析构函数
+C++ 中，全局对象就必须在 main 函数执行之前就构造，在 main 函数结束之后要析构。这些代码会放在 .init 段与 .fini 段里面。顾名思义。
+** 什么是 ELF 文件的 ABI ？ :card:
+:PROPERTIES:
+:ANKI_NOTE_HASH: 2c454183f70d8d8eb77d1b827dc3b41e
+:ANKI_NOTE_ID: 1702660495934
+:END:
+- 每个编译器都可以将源代码编译成可执行文件。而且存在有两个不同的编译器编译出的 .o 文件能够互相链接的情况，同时也有不能互相链接的情况。那么自然有这样一个问题涌现：是什么影响了两个目标文件能否互相链接？
+
+
+两个目标文件能够互相链接必须满足的条件：相同的目标文件格式、同样的符号修饰标准、变量的内存布局方式相同、函数的调用方式相同。这些 *可执行文件兼容性* 相关的内容，就被统称为 ABI (Application Binary Interface)
+** 人们在谈论 C++ 的二进制兼容性不好的时候，他们在说什么？ :card:
+:PROPERTIES:
+:ANKI_NOTE_HASH: 30fda5a6c5933b242c13888458e8c818
+:ANKI_NOTE_ID: 1702660706178
+:END:
+这是在说，C++不仅会有不同的编译器编译的二进制代码之间无法互相兼容，而且有的时候连同一个编译器的不同版本之间的兼容性也不好。
+* 静态链接器之 ld 脚本
+为了链接一个操作系统内核之类的ELF文件，我们不能简单地去使用默认的链接脚本，而会做一些定制。比如说指定某些段必须存放在指定的物理内存地址上，诸如此类的问题。
+
+而使用 LD 的脚本就可以部分解决这个问题，因为它能够控制把什么段链接到哪个文件里面，将哪些段抛弃。
+* Windows 概念
+** Windows 中的 PE/COFF 文件格式
