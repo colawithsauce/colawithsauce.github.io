@@ -1,0 +1,8 @@
+baseURL = 'https://blog.colawithsauce.cn/'
+languageCode = 'zh-cn'
+title = 'Cola-With-Sauce'
+theme = 'nostyleplease'
+publishDir = 'docs'
+
+[markup.goldmark.renderer]
+  unsafe = true

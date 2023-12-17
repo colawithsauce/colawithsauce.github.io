@@ -1,0 +1,11 @@
+#+title: All Posts
+* TODO My first post :tag1:@category1:
+:PROPERTIES:
+:EXPORT_FILE_NAME: my-first-post
+:END:
+This is my post body
+* TODO 这是另一个测试
+:PROPERTIES:
+:EXPORT_FILE_NAME: another-test-post
+:END:
+Last test
