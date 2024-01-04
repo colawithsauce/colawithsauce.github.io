@@ -3,5 +3,8 @@ languageCode = 'zh-cn'
 title = 'Cola-With-Sauce'
 theme = 'nostyleplease'
 
+[imaging]
+  bgColor = '#ffffff'
+
 [markup.goldmark.renderer]
   unsafe = true
