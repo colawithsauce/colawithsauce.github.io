@@ -1,4 +1,7 @@
 #+title: Set Flag 与 Wait Flag 的模型
+#+options: ^:nil
+#+hugo_tags: HPC 算子开发
+#+DATE: [2024-01-16 Tue]
 
 在看代码的过程中，set_flag 与 wait_flag 是我最不能够理解的部分了。但是其实如果我们了解了NPU的编程模型，这个问题就迎刃而解了。
 * NPU 编程模型
@@ -12,7 +15,6 @@
 #+begin_quote
 还有一个可能的担心是：如果流水线阻塞（BARRIER）指令，与其前后的指令也来了一个『后发而先至』，那要怎么办呢？对于这个问题，我想可能硬件必须强制遵守『PIPE_BARRIER』这一指令不会出现『乱序到达』的约定。比如说，当CU在遇见阻塞指令后，发射到该流水线的功能将会暂时失能（disabled），直到该流水线中的所有指令被执行完毕，触发了一个 Empty 信号重新使能（enable）CU发射到目标流水线的能力。
 #+end_quote
-
 
 * set_flag 与 wait_flag 的模型
 考虑如下一个过程：

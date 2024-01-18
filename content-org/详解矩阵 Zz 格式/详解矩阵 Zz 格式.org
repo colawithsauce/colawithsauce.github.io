@@ -1,5 +1,7 @@
 #+title: 详解矩阵 zZ|zN|nN|nZ 四种格式
 #+hugo_custom_front_matter: :mathjax true
+#+hugo_tags: HPC 算子开发
+#+DATE: [2023-12-12 Tue]
 
 在全局内存（Global Memory）中，一个列优先矩阵的存在形式一般如下图所示：
 [[file:ND列优先格式示意.drawio.png]]

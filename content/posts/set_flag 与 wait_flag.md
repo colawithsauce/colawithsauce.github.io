@@ -1,7 +1,8 @@
 +++
 title = "Set Flag 与 Wait Flag 的模型"
 author = ["colawithsauce"]
-lastmod = 2024-01-16T12:36:21+08:00
+date = 2024-01-16T00:00:00+08:00
+tags = ["HPC", "算子开发"]
 draft = false
 +++
 

@@ -1,7 +1,9 @@
 +++
 title = "详解矩阵 zZ|zN|nN|nZ 四种格式"
 author = ["colawithsauce"]
-lastmod = 2024-01-15T15:20:42+08:00
+date = 2023-12-12T00:00:00+08:00
+lastmod = 2024-01-18T13:51:38+08:00
+tags = ["HPC", "算子开发"]
 draft = false
 mathjax = true
 +++
