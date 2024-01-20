@@ -3,7 +3,8 @@
 :END:
 #+title: 存在与时间
 #+hugo_custom_front_matter: :mathjax false
-#+hugo_tags: Philosophy Existentialism
+#+hugo_tags: Existentialism
+#+hugo_categories: Philosophy
 #+DATE: [2024-01-20 Sat 15:42]
 
 * 阅读日志

@@ -1,6 +1,7 @@
 #+title: Set Flag 与 Wait Flag 的模型
 #+options: ^:nil
-#+hugo_tags: HPC 算子开发
+#+hugo_tags: 算子开发
+#+hugo_categories: HPC
 #+DATE: [2024-01-16 Tue]
 
 在看代码的过程中，set_flag 与 wait_flag 是我最不能够理解的部分了。但是其实如果我们了解了NPU的编程模型，这个问题就迎刃而解了。
