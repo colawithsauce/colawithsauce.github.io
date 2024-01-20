@@ -1,15 +1,5 @@
 #+title: All Posts
 
-* DONE About Me :@aboutme:
-:PROPERTIES:
-:EXPORT_FILE_NAME: About_Me
-:EXPORT_HUGO_WEIGHT: 1
-:END:
-
-Hi! I'm colawithsauce, majored in Computer Science, pursuing my Master's degree now. You can find posts about Emacs, HPC, CPP, Philosophy, and other articles
-
-- Github：https://github.com/colawithsauce
-
 * DONE 为什么 2023 年，我的“获得感”不够？ :reflection:@article:
 :PROPERTIES:
 :EXPORT_FILE_NAME: 2023-why-not-enough-sense-of-gain
