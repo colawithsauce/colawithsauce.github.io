@@ -20,3 +20,15 @@ identifier = "TAGS"
 name = "tags"
 url = "/tags/"
 weight = 20
+
+[params.homeInfoParams]
+Title = "Hi there 👋"
+Content = "Hi! I'm colawithsauce, majored in Computer Science, pursuing my Master's degree now. You can find posts about Emacs, HPC, CPP, Philosophy, and other articles"
+
+[[params.socialIcons]]
+name = "twitter"
+url = "https://twitter.com/cola_vs_sauce"
+
+[[params.socialIcons]]
+name = "github"
+url = "https://github.com/colawithsauce"
