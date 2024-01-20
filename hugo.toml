@@ -8,3 +8,15 @@ theme = 'PaperMod'
 
 [markup.goldmark.renderer]
   unsafe = true
+
+[[menu.main]]
+identifier = "CATEGORIES"
+name = "categories"
+url = "/categories/"
+weight = 10
+
+[[menu.main]]
+identifier = "TAGS"
+name = "tags"
+url = "/tags/"
+weight = 20
