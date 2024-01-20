@@ -1,7 +1,7 @@
 baseURL = 'https://blog.colawithsauce.cn/'
 languageCode = 'zh-cn'
 title = 'Cola-With-Sauce'
-theme = 'nostyleplease'
+theme = 'PaperMod'
 
 [imaging]
   bgColor = '#ffffff'

@@ -13,7 +13,16 @@ title = "Me"
   # url = "https://space.bilibili.com/65240709"
 
 [[entries]]
-title = "Recent 3 articles"
+title = "Recent 3 posts"
+
+  [entries.post_list]
+  limit = 3
+  show_more = true
+  show_more_text = "See all posts"
+  show_more_url = "posts"
+
+[[entries]]
+title = "Reading logs"
 
   [entries.post_list]
   limit = 3
