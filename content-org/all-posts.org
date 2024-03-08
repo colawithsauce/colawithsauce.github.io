@@ -60,6 +60,24 @@ fun () {
 
 export_function fun
 #+end_src
+* DONE wine-wechat 中文乱码问题
+CLOSED: [2024-03-09 Sat 01:06]
+:PROPERTIES:
+:EXPORT_FILE_NAME: wine_wechat_chinese_toufu_problem
+:END:
+最近几天使用 wine-wechat 的时候发现我在输入框里面输入文字的时候，中文是豆腐块。但是发出之后以及其它的地方，中文又能够正常显示。省流：原来是 LC_ALL 惹的祸：
+#+begin_src sh
+env LC_ALL="zh_CN.utf8" LANG="zh_CN.utf8" wechat
+#+end_src
+
+这样就能够正常显示中文了。我们想要将这个效果持久化，就将其写入 ~wine-wechat.desktop~ 中就好了：
+#+begin_example
+[Desktop Entry]
+Exec=env WINEDEBUG=-all LC_ALL="zh_CN.utf8" LANG="zh_CN.utf8" wechat
+# ...
+#+end_example
+
+这个问题我排查了很久，首先我想到可能是因为富文本编辑器依赖没有安装完全，所以我用 winetricks 安装了所有的富文本编辑器依赖项。后面又觉得可能是我刚好没有安装显示输入框里面中文所需要的字体，但是我明明在前几天还能够正常地使用的。于是我觉得可能是我乱添加依赖项，改动了注册表，导致显示的字体从原本有的字体被替换成了不存在的字体导致中文字体显示失败。于是我改了注册表，但是仍然有问题。最后我看论坛里面有人说首先要排查 ~locale -a~ 中是否有 ~zh_CN.utf8~ ，我灵光一闪才想到这其中关节。
 * TODO Cgemv 算子的调优
 :PROPERTIES:
 :EXPORT_FILE_NAME: huawei_cgemv_operator_writing_and_optimizing
@@ -138,21 +156,3 @@ struct complex{
 今天在写干活的代码的时候遇到了 Citre 无法补全符号的问题，最后解决方案是设置 tags 不去搜索外部的代码库里面的 symbol，只索引本项目的 symbol。
 
 猜想可能的原因是外部代码库太大了，使得本地的 symbol 被顶掉了。我感觉不太可能。
-* DONE wine-wechat 中文乱码问题
-:PROPERTIES:
-:EXPORT_FILE_NAME: wine_wechat_chinese_toufu_problem
-:END:
-CLOSED: [2024-03-09 Sat 01:06]
-最近几天使用 wine-wechat 的时候发现我在输入框里面输入文字的时候，中文是豆腐块。但是发出之后以及其它的地方，中文又能够正常显示。省流：原来是 LC_ALL 惹的祸：
-#+begin_src sh
-env LC_ALL="zh_CN.utf8" LANG="zh_CN.utf8" wechat
-#+end_src
-
-这样就能够正常显示中文了。我们想要将这个效果持久化，就将其写入 ~wine-wechat.desktop~ 中就好了：
-#+begin_example
-[Desktop Entry]
-Exec=env WINEDEBUG=-all LC_ALL="zh_CN.utf8" LANG="zh_CN.utf8" wechat
-# ...
-#+end_example
-
-这个问题我排查了很久，首先我想到可能是因为富文本编辑器依赖没有安装完全，所以我用 winetricks 安装了所有的富文本编辑器依赖项。后面又觉得可能是我刚好没有安装显示输入框里面中文所需要的字体，但是我明明在前几天还能够正常地使用的。于是我觉得可能是我乱添加依赖项，改动了注册表，导致显示的字体从原本有的字体被替换成了不存在的字体导致中文字体显示失败。于是我改了注册表，但是仍然有问题。最后我看论坛里面有人说首先要排查 ~locale -a~ 中是否有 ~zh_CN.utf8~ ，我灵光一闪才想到这其中关节。

@@ -1,10 +1,10 @@
 +++
 title = "wine-wechat 中文乱码问题"
 author = ["colawithsauce"]
+date = 2024-03-09T01:06:00+08:00
 draft = false
 +++
 
-CLOSED: <span class="timestamp-wrapper"><span class="timestamp">[2024-03-09 Sat 01:06]</span></span>
 最近几天使用 wine-wechat 的时候发现我在输入框里面输入文字的时候，中文是豆腐块。但是发出之后以及其它的地方，中文又能够正常显示。省流：原来是 LC_ALL 惹的祸：
 
 ```sh
