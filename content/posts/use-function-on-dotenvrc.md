@@ -2,6 +2,7 @@
 title = "在 .envrc 中定义函数"
 author = ["colawithsauce"]
 date = 2024-01-22T11:30:00+08:00
+categories = ["article"]
 draft = false
 +++
 

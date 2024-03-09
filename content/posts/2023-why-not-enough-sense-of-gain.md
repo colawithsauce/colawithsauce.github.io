@@ -2,7 +2,8 @@
 title = "为什么 2023 年，我的“获得感”不够？"
 author = ["colawithsauce"]
 lastmod = 2024-01-05T12:56:13+08:00
-tags = ["reflection", "article"]
+tags = ["reflection"]
+categories = ["article"]
 draft = false
 +++
 

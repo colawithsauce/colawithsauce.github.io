@@ -2,7 +2,7 @@
 title = "Extern C 的用法"
 author = ["colawithsauce"]
 date = 2024-01-18T14:00:00+08:00
-tags = ["CPP"]
+categories = ["CPP"]
 draft = false
 +++
 

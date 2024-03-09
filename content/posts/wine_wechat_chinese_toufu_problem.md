@@ -2,6 +2,7 @@
 title = "wine-wechat 中文乱码问题"
 author = ["colawithsauce"]
 date = 2024-03-09T01:06:00+08:00
+categories = ["article"]
 draft = false
 +++
 
