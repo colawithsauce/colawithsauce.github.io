@@ -1,6 +1,6 @@
 baseURL = 'https://blog.colawithsauce.cn/'
 languageCode = 'zh-cn'
-title = 'Cola-With-Sauce'
+title = '酱汁可乐'
 theme = 'PaperMod'
 
 [imaging]
@@ -27,7 +27,7 @@ Content = "Hi! I'm colawithsauce, majored in Computer Science, pursuing my Maste
 
 [[params.socialIcons]]
 name = "twitter"
-url = "https://twitter.com/cola_vs_sauce"
+url = "https://twitter.com/colabrewsred"
 
 [[params.socialIcons]]
 name = "github"
