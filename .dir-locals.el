@@ -4,4 +4,4 @@
 ((org-mode . ((org-log-done . t)
               (org-hugo-section . "posts")
               (org-hugo-auto-set-lastmod . t)
-              (org-hugo-base-dir . "/home/colawithsauce/Projects/Hugo/"))))
+              (org-hugo-base-dir . "~/colawithsauce.github.io/"))))
