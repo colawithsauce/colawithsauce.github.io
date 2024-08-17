@@ -83,6 +83,12 @@ Exec=env WINEDEBUG=-all LC_ALL="zh_CN.utf8" LANG="zh_CN.utf8" wechat
 今天在写干活的代码的时候遇到了 Citre 无法补全符号的问题，最后解决方案是设置 tags 不去搜索外部的代码库里面的 symbol，只索引本项目的 symbol。
 
 猜想可能的原因是外部代码库太大了，使得本地的 symbol 被顶掉了。我感觉不太可能。
+* DONE 发现了一个适合作为编程背景音乐的网站
+CLOSED: [2024-08-17 Sat 22:34]
+:PROPERTIES:
+:EXPORT_FILE_NAME: ProgrammingBackgroundMusic
+:END:
+https://musicforprogramming.net
 * DONE 记录编译 LLVM 并配置 MLIR 开发环境
 CLOSED: [2024-08-13 Tue 17:24]
 :PROPERTIES:
@@ -131,9 +137,20 @@ MLIR 里面的 Constraints 分成三类：One Element Constraint, Multi Element 
 
 ** Type<CPred>
 ODS 里面的类继承关系是：Type -> TypeConstraint -> Constraint，我们使用 Type 的时候，使用的是 Type<Pred>，其中 Pred 是一个断言，而整个 ~Type<Pred>~ 则是一个类型。我们在编程的时候，要特别注意这里的类型与断言不能够搞混了。
+* TODO Rust 笔记
+:PROPERTIES:
+:EXPORT_FILE_NAME: Rust_notes
+:END:
+** 所有权
+什么时候可能会转移所有权？
+1. vec.push(x) 的时候会将 x 的所有权转移到 vec 里面去
+2. ~if let Some(x) = abc~ 会把 abc 的所有权转移
+3. ~for i in vec~ 会使用 move 语义，将 vec 消费掉（如果不想这样的话，显式使用 iter()，这是借用语义）
+
 * TODO 刷题笔记
 :PROPERTIES:
 :EXPORT_FILE_NAME: leetcode_notes
+:EXPORT_DATE: 2024-08-17
 :END:
 ** 遍历类
 遍历类的难点在哪里？我觉得我很多的时候搞不清下面几点：
