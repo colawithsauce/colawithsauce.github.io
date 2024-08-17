@@ -83,7 +83,7 @@ Exec=env WINEDEBUG=-all LC_ALL="zh_CN.utf8" LANG="zh_CN.utf8" wechat
 今天在写干活的代码的时候遇到了 Citre 无法补全符号的问题，最后解决方案是设置 tags 不去搜索外部的代码库里面的 symbol，只索引本项目的 symbol。
 
 猜想可能的原因是外部代码库太大了，使得本地的 symbol 被顶掉了。我感觉不太可能。
-* DONE 发现了一个适合作为编程背景音乐的网站
+* DONE 发现了一个适合作为编程背景音乐的网站 :@memo:BackgroundMusic:
 CLOSED: [2024-08-17 Sat 22:34]
 :PROPERTIES:
 :EXPORT_FILE_NAME: ProgrammingBackgroundMusic
