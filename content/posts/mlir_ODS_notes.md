@@ -6,6 +6,8 @@ categories = ["technote"]
 draft = true
 +++
 
+Abstract: 这篇笔记的愿景是：首先，我将 MLIR ODS 的知识粗略地介绍一下。然后再给出我使用 MLIR ODS 定义一个 Op 的例子。我想，这就应该能给读者一些启发了。
+
 MLIR 里面的 Constraints 分成三类：One Element Constraint, Multi Element Constraint, Trait
 
 其中第一类可以理解成类型（Type），他分成元素的类型与Attributes的类型。第二类是多个元素的 Constraint。比如说需要表示多个参数都是同样的类型；第三个是表示这个Op本身的性质，比如说 Pure。这样这些Op就能够被别的程序利用。
