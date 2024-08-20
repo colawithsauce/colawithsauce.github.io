@@ -22,8 +22,8 @@ url = "/tags/"
 weight = 20
 
 [params.homeInfoParams]
-Title = "Hi there 👋"
-Content = "Hi! I'm colawithsauce, majored in Computer Science, pursuing my Master's degree now. You can find posts about Emacs, HPC, CPP, Philosophy, and other articles"
+Title = "我是 colawithsauce"
+Content = "24岁，是学生。现在读研，主攻 HPC 方向。这里会分享一切我想分享的话题。"
 
 [[params.socialIcons]]
 name = "twitter"
