@@ -122,6 +122,7 @@ set(CMAKE_PREFIX_PATH ~/.local)
 * TODO 《轻松主义》阅读笔记
 :PROPERTIES:
 :EXPORT_FILE_NAME: easilism_book_reading_notes
+:EXPORT_OPTIONS: toc:2
 :END:
 Abstract: 本文准备写一写我在阅读《轻松主义》这本书的时候的所思所想。主要是按照《轻松主义》这本书的大纲结构，看到能联系起我之前没能做好的事情，然后在书中这条建议下能够优化成什么样。每节的内容按照这样展开：
 
