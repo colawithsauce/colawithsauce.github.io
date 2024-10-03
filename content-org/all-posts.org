@@ -291,6 +291,26 @@ CLOSED: [2024-09-25 Wed 13:07]
 - [ ] 妖精森林的小不点
 - [ ] 柑橘味香气
 - [ ] 温泉幼精箱根酱
+
+* DONE Eheu, sic vita fugit.
+CLOSED: [2024-10-04 Fri 01:35]
+:PROPERTIES:
+:EXPORT_FILE_NAME: eheu-sic-vita-fugit
+:END:
+唉，生命就这样流逝。
+
+eheu: 叹词
+sic: 这样
+vita: 名词的单数主格形式
+fugit: fugio, fugere, fugi, fugitum
+#+begin_example
+名词的现在时第三人称单数尾缀为： -t （一二三人称单复数分别是 -o, -s, -t, -mus, -tis, -unt），如果是完成时或者进行时，则需要加中缀。
+#+end_example
+所以 fugi 变位为 fugit，表示“it escape”
+
+连起来，翻译就是：Oh! like this life escape. 文艺一点就是：唉！生命就这样流逝。
+
+
 * TODO 《轻松主义》阅读笔记 :@article:ReadingNotes:
 :PROPERTIES:
 :EXPORT_FILE_NAME: easilism_book_reading_notes
