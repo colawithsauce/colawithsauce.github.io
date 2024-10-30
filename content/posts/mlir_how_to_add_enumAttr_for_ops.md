@@ -33,3 +33,20 @@ Debug 了很久，终于找到方法了。本来想着找到方法之后写篇�
 
 1.  ➀ 要在 ➂ 和 ➄ 前，因为他们之间有一个全序的依赖关系。我后面困惑了几分钟的问题就是因为我把 ➂ 给放到 ➄ 下面了。
 2.  不要忘记添加 ➁ 这一句。如果不添加这句，则不会 include 任何东西。我也在这里犯了错
+
+EDIT1:
+发现链接 xxx-opt 时提示 undefined reference，于是我发现需要在 Arith.cpp 里面增加：
+
+{{< figure src="/ox-hugo/_20241031_040745screenshot.png" >}}
+
+然后发现另一个坑，在编译的时候会报错：
+
+{{< figure src="/ox-hugo/_20241031_041132screenshot.png" >}}
+
+然后发现是我在 Arith.cpp 里面少引入了一个头文件：
+
+```cpp
+#include "llvm/ADT/TypeSwitch.h"
+```
+
+是的，如果不直接引入这个头文件就会报错。
