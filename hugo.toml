@@ -1,0 +1,34 @@
+baseURL = 'https://blog.colawithsauce.cn/'
+languageCode = 'zh-cn'
+title = '酱汁可乐'
+theme = 'PaperMod'
+
+[imaging]
+  bgColor = '#ffffff'
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[[menu.main]]
+identifier = "CATEGORIES"
+name = "categories"
+url = "/categories/"
+weight = 10
+
+[[menu.main]]
+identifier = "TAGS"
+name = "tags"
+url = "/tags/"
+weight = 20
+
+[params.homeInfoParams]
+Title = "我是 colawithsauce"
+Content = "24岁，是学生。现在读研，主攻 HPC 方向。这里会分享一切我想分享的话题。"
+
+[[params.socialIcons]]
+name = "twitter"
+url = "https://twitter.com/colabrewsred"
+
+[[params.socialIcons]]
+name = "github"
+url = "https://github.com/colawithsauce"

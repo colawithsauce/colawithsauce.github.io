@@ -1,0 +1,59 @@
+#+title: Set Flag 与 Wait Flag 的模型
+#+options: ^:nil
+#+hugo_tags: 算子开发
+#+hugo_categories: HPC
+#+DATE: [2024-01-16 Tue]
+
+在看代码的过程中，set_flag 与 wait_flag 是我最不能够理解的部分了。但是其实如果我们了解了NPU的编程模型，这个问题就迎刃而解了。
+* NPU 编程模型
+[[./NPU_programming_model.png]]
+
+如上图所示，NPU编程模型为CU向各个类型的指令流水线（PIPE）中委派对应的指令（需要同步的只有数据搬运指令）。比如说我有一个指令，功能是从 Global Memory 向 Unified Buffer 中搬运数据，其对应的 PIPE 编号是 MTE2。我们的 CU 就会在读到这一行代码的时候，将它『发射』到对应的 MTE2 流水线上。而 *已经位于* 流水线上的指令会顺序执行。
+
+** 顺序发射就一定会顺序执行吗？
+这就是上面我要加粗『已经位于』的原因。CU在发射的时候是『只管发射』的，它不会管发射后指令到达流水线中的顺序。因此，我们在代码中不能假定前一条指令一定会先于后一条指令到达指令流水线中。只有流水线阻塞（PIPE_BARRIER）指令才能保证这一顺序。
+
+#+begin_quote
+还有一个可能的担心是：如果流水线阻塞（BARRIER）指令，与其前后的指令也来了一个『后发而先至』，那要怎么办呢？对于这个问题，我想可能硬件必须强制遵守『PIPE_BARRIER』这一指令不会出现『乱序到达』的约定。比如说，当CU在遇见阻塞指令后，发射到该流水线的功能将会暂时失能（disabled），直到该流水线中的所有指令被执行完毕，触发了一个 Empty 信号重新使能（enable）CU发射到目标流水线的能力。
+#+end_quote
+
+* set_flag 与 wait_flag 的模型
+考虑如下一个过程：
+
+数据从 Global Memory 中搬运到 L1 Buffer 中，再从 L1 Buffer 中分次搬运到 L0 Buffer 里面进行矩阵计算。同时，我们在 L1 Buffer 中做双缓冲策略。即每次我们只使用 L1 Buffer 的一半大小，从 Global Memory 中向 L1 搬运一半大小的数据时，便启动对这一半数据 L1 到 L0 的搬运及 L0 中数据的计算。
+
+#+begin_quote
+这样做的好处是，当我们启动这一半数据的 L1 到 L0 的搬运及 L0 中数据的计算的同时，MTE2 中可以与此同时启动从 Global Memory 到另一半的 L1 Buffer 的数据搬运。这样，我们便增加了数据和运算的并行性。
+#+end_quote
+
+我们使用下面的图来表示这一个过程，同时为了简化讨论，我们使用 I 来表示从 Global Memory 到 L1 的指令流水线，使用 II 来表示从 L1 到 L0 的指令流水线。
+
+[[./double_buffer_illustration.png]]
+
+对于上图，我们还发现了更多的同步关系：
+- 1与2，3与4是同步的。否则就会导致搬运了未初始化的数据
+- 2与4是必须同步的。否则就会出现覆盖了未完成使用的数据
+
+在介绍如何使用 set_flag 与 wait_flag 解决这个问题之前，我们必须介绍一下 set_flag 与 wait_flag 的功能及其参数。不过，我们可以直接使用华为官网的介绍：
+
+它们声明如下：
+#+begin_src cpp
+void set_flag(pipe_t pipe, pipe_t tpipe, event_t pipeID);
+void wait_flag(pipe_t pipe, pipe_t tpipe, event_t pipeID);
+#+end_src
+
+#+begin_quote
+- Barrier本身是一条指令，用于在队列内部约束执行顺序。其作用是，保证前序队列中所有数据的读写工作全部完成，后序指令才能执行。
+
+- set_flag/wait_flag为两条指令，在set_flag/wait_flag的指令中，可以指定一对指令队列的关系，表示两个队列之间完成一组“锁”机制，其作用方式为：
+  - set_flag：当前序指令的所有读写操作都完成之后，当前指令开始执行，并将硬件中的对应标志位设置为1。
+  - wait_flag：当执行到该指令时，如果发现对应标志位为0，该队列的后续指令将一直被阻塞；如果发现对应标志位为1，则将对应标志位设置为0，同时后续指令开始执行。
+#+end_quote
+
+现在，我们可以画出上面的过程对应的流水线图了。
+
+[[./pipes_illustration.png]]
+
+如上图所示，（注意，横轴不代表时间而代表指令！）。我们使用 set_flag/wait_flag(I, II, ID) 的时候，set 会被发射进流水线 I 而 wait 会被发射进流水线 II 中。（而且好像同样不必考虑上面说的乱序到达问题）
+
+这样的效果是，对于流水线自身而言：执行到 set 我们就只要简单地通知对应的 wait 放行，而执行到 wait 的时候只要简单地等待对应的 set 的通知就好了。

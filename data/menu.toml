@@ -1,0 +1,47 @@
+[[entries]]
+title = "Former EE student, now major in CS, specialize in High-Performance Computing (HPC). I'll share some technical and reading notes here."
+
+[[entries]]
+title = "Me"
+
+  [[entries.entries]]
+  title = "My GitHub"
+  url = "https://github.com/colawithsauce"
+
+  # [[entries.entries]]
+  # title = "My BiliBili"
+  # url = "https://space.bilibili.com/65240709"
+
+[[entries]]
+title = "Recent 3 posts"
+
+  [entries.post_list]
+  limit = 3
+  show_more = true
+  show_more_text = "See all posts"
+  show_more_url = "posts"
+
+[[entries]]
+title = "Reading logs"
+
+  [entries.post_list]
+  limit = 3
+  show_more = true
+  show_more_text = "See all"
+  show_more_url = "posts"
+
+# [[entries]]
+# title = "posts by category"
+
+#   [entries.post_list]
+#   section = "posts"
+#   show_more = true
+#   show_more_text = "See more posts..."
+#   show_more_url = "posts"
+
+[[entries]]
+title = "Other"
+
+[[entries.entries]]
+title = "rss"
+url = "index.xml"

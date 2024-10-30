@@ -1,0 +1,1197 @@
+#+title: All Posts
+#+STARTUP: fold
+
+* DONE 为什么 2023 年，我的“获得感”不够？ :reflection:@article:
+:PROPERTIES:
+:EXPORT_FILE_NAME: 2023-why-not-enough-sense-of-gain
+:END:
+今天，2024我反思我2023年，我没有获得感的原因：
+1. 输出强度不够：我应该早些地将我的博客重新使用起来，把日常的学习积累分享出来。达到费曼学习法的要求。
+2. 太容易分心：关于这个观点，我最近有一个想法，就是使用冥想法。但是把冥想中所有的“呼吸”，换成我欲有所事功的事，这样练习专注的时候也不会觉得是一种“花时间”。
+3. 不会悬搁判断：
+   - 首先，第一个意义上：这是同冥想“配套”的，不要急于否定自己，觉得自己的努力不可能有结果。
+   - 第二个意义上：我应该更加 Open Minded，多看多学，不要因为觉得没用（这种情况占一大部分），或者觉得太难（占另外很大一部分）而完全拒绝相关的知识进入脑海，人为地给自己设置了“心障”。
+4. Burn-out：我后面停下来了，这点我承认我对于觉得做了也没有意义的事情就会完全没有动力去做。但是我的目标是“一步登天”，所以作为一个初学者的我，什么样的事情也是会“做了也没有意义”的。因此我觉得我应该去培养一种“珍视”的能力，一种为自己每日的进步而“感到愉悦”的能力。
+* DONE Extern C 的用法 :@CPP:
+CLOSED: [2024-01-18 Thu 14:00]
+:PROPERTIES:
+:EXPORT_FILE_NAME: extern_c_usage
+:END:
+** 原理
+extern C 作用的域内，全部的函数与变量名都被编译成 C 的 ABI 格式。因此想要理解 extern C 只需要理解编译器与链接器的行为就好了。
+** C++ 使用 C 函数
+因为如果我们直接 ~#include~ C 的头文件，如果是在 C 提供了 .c 的源代码的情况下，我们当然可以（大概是大部分时候吧）不用加 extern C，因为我们将使用 C++ 的方式来解释它们，而 C++ 是兼容 C 的。
+
+但是如果我们只有头文件而没有源文件，即 C 代码是用共享库之类的方式给予我们的，我们就需要使用 extern C 来让 C++ 编译器在处理这些函数名的时候不要把它们处理成 C++ 的函数签名形式，而是 C 语言的函数签名模式。若非如此，代码将无法链接，提示无法找到 ~__Zz_testfunc_int_int_~ 之类的有非常奇怪名字的函数。
+** C 使用 C++ 函数
+我们同样要将 C++ 想要暴露给 C 的接口使用 extern C 修饰，或者直接将这些接口在 ~.h~ 文件里面用 ~extern "C" { ... }~ 括起来。这样，C 就可以调用 C++ 的函数了。
+** 其它问题
+*** 在C++代码中，在使用 extern C 修饰的函数中，我能否使用 C++ 函数？
+这个问题是我作这番研究的原因，而研究完 extern C 的用法后，就应该明白，我们当然可以使用 C++ 函数。因为 extern C 只是告诉编译器要将这个函数名在编译目标文件时不要转换成 C++ 的函数签名，而是使用原名即 C 语言的函数签名形式。而接口是不影响实现要怎么样的。
+* DONE 在 .envrc 中定义函数 :@article:
+CLOSED: [2024-01-22 Mon 11:30]
+:PROPERTIES:
+:EXPORT_FILE_NAME: use-function-on-dotenvrc
+:END:
+参考 https://github.com/direnv/direnv/issues/73#issuecomment-152284914
+
+在 ~~/.direnvrc~ 中写到
+#+begin_src sh
+export_function() {
+  local name=$1
+  local alias_dir=$PWD/.direnv/aliases
+  mkdir -p "$alias_dir"
+  PATH_add "$alias_dir"
+  local target="$alias_dir/$name"
+  if declare -f "$name" >/dev/null; then
+    echo "#!$SHELL" > "$target"
+    declare -f "$name" >> "$target" 2>/dev/null
+    # Notice that we add shell variables to the function trigger.
+    echo "$name \$*" >> "$target"
+    chmod +x "$target"
+  fi
+}
+#+end_src
+
+这样，我们就能够在 ~.envrc~ 中写到
+#+begin_src sh
+fun () {
+    echo "happy world!"
+}
+
+export_function fun
+#+end_src
+* DONE wine-wechat 中文乱码问题 :@article:
+CLOSED: [2024-03-09 Sat 01:06]
+:PROPERTIES:
+:EXPORT_FILE_NAME: wine_wechat_chinese_toufu_problem
+:END:
+最近几天使用 wine-wechat 的时候发现我在输入框里面输入文字的时候，中文是豆腐块。但是发出之后以及其它的地方，中文又能够正常显示。省流：原来是 LC_ALL 惹的祸：
+#+begin_src sh
+env LC_ALL="zh_CN.utf8" LANG="zh_CN.utf8" wechat
+#+end_src
+
+这样就能够正常显示中文了。我们想要将这个效果持久化，就将其写入 ~wine-wechat.desktop~ 中就好了：
+#+begin_example
+[Desktop Entry]
+Exec=env WINEDEBUG=-all LC_ALL="zh_CN.utf8" LANG="zh_CN.utf8" wechat
+# ...
+#+end_example
+
+这个问题我排查了很久，首先我想到可能是因为富文本编辑器依赖没有安装完全，所以我用 winetricks 安装了所有的富文本编辑器依赖项。后面又觉得可能是我刚好没有安装显示输入框里面中文所需要的字体，但是我明明在前几天还能够正常地使用的。于是我觉得可能是我乱添加依赖项，改动了注册表，导致显示的字体从原本有的字体被替换成了不存在的字体导致中文字体显示失败。于是我改了注册表，但是仍然有问题。最后我看论坛里面有人说首先要排查 ~locale -a~ 中是否有 ~zh_CN.utf8~ ，我灵光一闪才想到这其中关节。
+* DONE Citre 使用问题 :ignore:
+CLOSED: [2024-08-18 Sun 16:30]
+今天在写干活的代码的时候遇到了 Citre 无法补全符号的问题，最后解决方案是设置 tags 不去搜索外部的代码库里面的 symbol，只索引本项目的 symbol。
+
+猜想可能的原因是外部代码库太大了，使得本地的 symbol 被顶掉了？
+* DONE 发现了一个适合作为编程背景音乐的网站 :@memo:BackgroundMusic:
+CLOSED: [2024-08-17 Sat 22:34]
+:PROPERTIES:
+:EXPORT_FILE_NAME: ProgrammingBackgroundMusic
+:END:
+https://musicforprogramming.net
+* DONE 记录编译 LLVM 并配置 MLIR 开发环境
+CLOSED: [2024-08-13 Tue 17:24]
+:PROPERTIES:
+:EXPORT_FILE_NAME: compile_llvm_and_configure_mlir_project
+:END:
+首先先把 llvm pull 下来
+#+begin_src shell
+git clone --depth=1 https://github.com/llvm/llvm-project
+cd llvm-project/
+mkdir build
+cd build
+#+end_src
+
+然后再编译
+#+begin_src shell
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON ../llvm -DCMAKE_INSTALL_PREFIX=~/.local -DLLVM_ENABLE_PROJECTS="clang;mlir;llvm;clang-tools-extra;lld" -DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU;AArch64"
+ninja -j$(($(nproc) - 1))
+ninja install
+#+end_src
+
+再把 ~/.local/bin 加一下 PATH
+#+begin_src shell
+echo "PATH=~/.local/bin:\${PATH}" >> ~/.bashrc
+#+end_src
+
+然后新建 MLIR 工程的时候如何让工程能够找到 LLVM/MLIR 呢？在你的工程的 CMakeLists.txt 里面加上一句：
+#+begin_src cmake
+set(CMAKE_PREFIX_PATH ~/.local)
+#+end_src
+* DONE MLIR lit 测试报错 ~AttributeError: 'NoneType' object has no attribute 'use_lit_shell'~ :@MLIR:Lit:
+CLOSED: [2024-08-26 Mon 16:30]
+:PROPERTIES:
+:EXPORT_FILE_NAME: mlir_lit_error_and_solusion_0
+:END:
+最近整 MLIR 相关任务，FileCheck + Lit 是其 IR 转换的标准测试工具链。
+
+但是我在图示目录树
+#+begin_src
+project          # 的这个目录下
+ |-lib
+ |-include
+ |+test
+  |-lit.cfg.py
+  |- ...
+ |- ...
+#+end_src
+
+运行 ~lit ./test/~ 进行测试，报错 ~AttributeError: 'NoneType' object has no attribute 'use_lit_shell'~
+
+后来上网查，发现是因为我们运行测试的目录错了。我们不应该在 project/test 目录下面运行，这是源代码的目录。我们应该在目标目录下面运行。也就是说，如果我的编译目标目录是 ~project/build~ ，那我就应该 ~lit project/build/test/~
+* DONE Deo volente
+CLOSED: [2024-09-25 Wed 13:07]
+:PROPERTIES:
+:EXPORT_FILE_NAME: deo-volente
+:END:
+
+这句话的意思是“God willing”，或者“if God is willing”。Deo 是 Deus 的离格，而 volente 则是动词 velle（愿意、想要）的现在分词的离格形式。
+
+- velle 的变化轨迹如下：
+  velle -> 词根：vol + 现在分词尾缀 -ns -> volens
+
+  volens 是现在分词，其遵循 -ns -ntis 这类形容词的变格法。因此其离格形式是 volente，这里他变成离格是为了修饰离格名词 Deo。
+
+- Deo 则在这里构成绝对离格结构（ablative absolute），表示某种附属的情况或者背景条件。
+
+  因此 Deo 可以翻译成 "From God"，"With God".
+
+故我们将上面两个信息组合起来，Deo Volente 可以翻译成 "From God willing"，"With God willing"，也就是 “在神的旨意下”。
+
+* DONE Eheu, sic vita fugit.
+CLOSED: [2024-10-04 Fri 01:35]
+:PROPERTIES:
+:EXPORT_FILE_NAME: eheu-sic-vita-fugit
+:END:
+唉，生命就这样流逝。
+
+eheu: 叹词
+sic: 这样
+vita: 名词的单数主格形式
+fugit: fugio, fugere, fugi, fugitum
+#+begin_example
+名词的现在时第三人称单数尾缀为： -t （一二三人称单复数分别是 -o, -s, -t, -mus, -tis, -unt），如果是完成时或者进行时，则需要加中缀。
+#+end_example
+所以 fugi 变位为 fugit，表示“it escape”
+
+连起来，翻译就是：Oh! like this life escape. 文艺一点就是：唉！生命就这样流逝。
+
+* 书单/补番列表/其他的列表 :@List:
+** 书单
+- [ ] 追忆似水年华卷二
+- [ ] 稀缺
+- [ ] 反脆弱
+** 补番列表
+- [ ] 流汗吧！健身少女
+- [ ] 女仆咖啡厅
+- [X] 因为太怕痛就全点防御力了
+- [ ] 我，不是说了能力要平均值么！
+- [ ] 异世界食堂
+- [ ] 摇曳露营
+- [ ] 卫宫家今天的饭
+- [ ] ANIMAYELL!
+- [ ] 三者三叶
+- [ ] 未确认进行式
+- [ ] RPG不动产
+- [ ] 恋爱小行星
+- [ ] NEW GAME!
+- [ ] 天使降临到我身边
+- [X] 干物妹！小埋
+- [ ] 放学后海堤日记
+- [ ] 白圣女与黑牧师
+- [ ] GJ部
+- [ ] 终将成为你
+- [ ] 恋爱研究所
+- [X] 幸运星
+- [ ] 我的妹妹不可能那么可爱
+- [ ] 摇曳百合
+- [ ] 玉响
+- [ ] 悠哉日常大王
+- [ ] 天体的秩序
+- [ ] 向山进发
+- [ ] 珈百璃的堕落
+- [ ] 一个人的〇〇小日子
+- [ ] 雏子的笔记
+- [ ] 此花亭奇谭
+- [ ] 小魔女学园
+- [ ] Re:Stage!
+- [ ] 邻家索菲
+- [ ] Endro!
+- [ ] 相合之物
+- [X] 放学后海堤日记
+- [ ] 请问您今天要来点兔子吗
+- [X] 孤独摇滚
+- [ ] 快盗天使 BREAK
+- [ ] 魔法护士小麦R
+- [ ] 魔法少女什么的已经够了啦。
+- [ ] 悠悠式
+- [X] 女孩的钓鱼慢活
+- [ ] slow start
+- [ ] 黄金拼图
+- [ ] 斯特拉的魔法
+- [ ] 动画同好会
+- [ ] anne happy
+- [ ] comic girls
+- [ ] URARA迷路帖
+- [ ] 若叶女孩
+- [ ] 房东青春期！
+- [X] 堀与宫村
+- [ ] 街角魔族
+- [ ] 熊熊勇闯异世界
+- [ ] 人马少女的烦恼
+- [ ] 猫神八百万
+- [ ] 三颗星彩色冒险
+- [ ] 加奈日记
+- [ ] 南家三姐妹
+- [ ] 骇客娃娃
+- [ ] 机甲少女 FRAME ARMS GIRL
+- [ ] 洲崎西 THE ANIMATION
+- [ ] 旋风管家
+- [ ] 超次元游戏 海王星
+- [ ] 神装少女小缠
+- [ ] 碧蓝航线：微速前行！
+- [ ] 武装神姬
+- [ ] 人类衰退之后
+- [ ] 给你做饭了！
+- [ ] 幸腹涂鸦
+- [ ] 高分少女
+- [X] 品酒要在成为夫妻后
+- [ ] WWW.迷糊餐厅
+- [ ] 电器街的漫画店
+- [ ] 元气囝仔
+- [ ] 轮回的拉格朗日
+- [ ] 宅饮
+- [X] 属性咖啡厅
+- [ ] 城下町的蒲公英
+- [ ] 三坪房间的侵略者！
+- [ ] 同居人是猫
+- [ ] 乌冬面之国的金色毛球
+- [X] 轻音少女
+- [X] 玉子市场
+- [ ] 天真与闪电
+- [ ] 猫娘乐园
+- [ ] 超元气三姐妹
+- [ ] 跟班×服务
+- [ ] 草莓棉花糖
+- [ ] 花开伊吕波
+- [ ] 会长是女仆大人！
+- [ ] 安达与岛村
+- [ ] 无畏魔女
+- [ ] 音乐少女
+- [X] 放学后桌游俱乐部
+- [ ] 普通女高中生要做当地偶像
+- [ ] 神推偶像登上武道馆我就死而无憾
+- [ ] 偶像选举
+- [ ] 魔法少女 俺
+- [ ] 佐贺偶像是传奇 卷土重来
+- [ ] 机器人少女Z
+- [ ] 天翔少女
+- [ ] 飞翔的魔女
+- [ ] 侦探歌剧 少女福尔摩斯
+- [ ] Crane Game Girls
+- [ ] SHOW BY ROCK
+- [ ] 面包带来和平
+- [ ] URAHARA
+- [ ] 伯纳德小姐说。
+- [X] 埃罗芒阿老师
+- [ ] 萌单
+- [ ] 初音岛
+- [ ] 自称贤者弟子的贤者
+- [ ] 电波女与青春男
+- [ ] 归宅部活动记录
+- [ ] 时钟机关之星
+- [ ] 你好七叶
+- [ ] 比宇宙更远的地方
+- [ ] 酷爱电影的庞波小姐
+- [X] 龙王的工作
+- [ ] 舞伎家的料理人
+- [ ] 妖精森林的小不点
+- [ ] 柑橘味香气
+- [ ] 温泉幼精箱根酱
+
+* TODO 占坑：讲明白 MLIR 的 Pattern Rewrite 机制
+** 引子：转换不出来的 vector.constant_mask
+* DONE MLIR 如何给 Op 增加 EnumAttr ？ :ATTACH:
+CLOSED: [2024-10-31 Thu 02:49]
+:PROPERTIES:
+:ID:       4d638523-ef9e-4020-91e7-555e661ecff7
+:EXPORT_FILE_NAME: mlir_how_to_add_enumAttr_for_ops
+:END:
+Debug 了很久，终于找到方法了。本来想着找到方法之后写篇文章细细道来，但是最后也只有三言两语好讲。
+
+首先，查阅官方的资料发现，我们只需要在 td 文件里面这样写，就能给我们的 Op 增加一个 Attribute 参数了。
+[[attachment:_20241031_023540screenshot.png]]
+
+但是试验之后发现并不可以，会提示 'MyEnumAttr' 不是 ~mlir::my_dialect::~ 命名域里面的成员。于是经过一段时间的与 CMake 和 C++ 编译报错信息的搏斗，终于让我找到问题所在了。
+
+让我们开门见山吧：
+
+首先，在 ~CMakeLists.txt~ 文件里，需要加上下面的➀、➁、➂，缺一不可：
+
+[[attachment:_20241031_024027screenshot.png]]
+
+1. LLVM_TARGET_DEFINITIONS 的作用：指定由什么文件来生成对应的声明与定义
+2. ~-gen-enum-{decls,defs}~ 的作用：生成这个 enum 的声明与定义
+3. ~-gen-attrdef-{decls,defs}~ 的作用：生成这个 enumAttr 的声明与定义
+
+没错！enumAttr 他又是 enum 又是 attr。面对这种情况，MLIR 官方文档里面的[[https://mlir.llvm.org/docs/DefiningDialects/AttributesAndTypes/#attributes][Attributes 教程]]只能说是部分正确，因为他只告诉了我们 Attr 要怎么加。但是却没有告诉我们 EnumAttr 怎么加。
+
+但是仅仅在告诉我们如何加 Attr 这方面，官方文档也并不全面。因为他没有告诉我们 ~.h~ 文件要怎么写。
+
+[[attachment:_20241031_024659screenshot.png]]
+
+如上图所示，➃、➄两步想必大家已经很熟悉了。我们要注意两点：
+1. ➀ 要在 ➂ 和 ➄ 前，因为他们之间有一个全序的依赖关系。我后面困惑了几分钟的问题就是因为我把 ➂ 给放到 ➄ 下面了。
+2. 不要忘记添加 ➁ 这一句。如果不添加这句，则不会 include 任何东西。我也在这里犯了错
+* TODO 《轻松主义》阅读笔记 :@article:ReadingNotes:
+:PROPERTIES:
+:EXPORT_FILE_NAME: easilism_book_reading_notes
+:EXPORT_OPTIONS: toc:2
+:END:
+Abstract: 本文准备写一写我在阅读《轻松主义》这本书的时候的所思所想。主要是按照《轻松主义》这本书的大纲结构，看到能联系起我之前没能做好的事情，然后在书中这条建议下能够优化成什么样。每节的内容按照这样展开：
+
+1. 章节x，内容y
+2. 之前……
+3. 如果看完了这本书，再让我回到那个时候，我会……
+
+最后再用自己的话做一个 500 字以内的总结。以轻松起见，我先完成我现在看到的部分往后的内容，以前的内容我之后再补。一切以负担最小为先。
+** 轻松主义纲领
+** 如何达到“轻松状态”？
+** 如何能够“轻松行动”？
+*** 前面的内容
+*** 设定行动的上下限
+这条纲领要求我们：①、不要用『高开低走』的形式去完成任务；②、用设定每次工作的上限的方法来找到轻松节奏；③、设定合理下限，保障进度范围。
+
+开始的时候劲头满满，强迫自己能干多少就干多少，然后后面发现自己感到了疲倦，最后就再也不想接着干这事了。这就是我很多次间歇性踌躇满志的真实写照。我总是这么认为，觉得如果想要真正做到什么事情，而我也应该心甘情愿地让他吞噬，这样才能够把事情推进下去。但是实际上，努力到一定的程度，再向上努力，则反而会适得其反。
+
+举一个例子，那就是我之前想把 Emacs 的 Linux 下面的 Cursor Animation 给整出来，然后连着整了许多天，每天都吞掉了我大量的时间去查看这个问题。然后我找到了关键代码，并且按照我想法改了一下之后发现没有 work，就直接一口气泄，再不想做了。实际上，在做的过程中，我其实还有别的正事要做，做这件事的时候我有一种非常焦虑的感觉。具体来说，我有一种想干呕的感觉，内心烦躁，总想着赶紧结束这件事情好让我做正事，但是又好像被什么力量按在上面，这个力量不停告诉我：“再努力一下，再努力一下，就能把这件事了结了。”
+
+得知了这条纲领，如果让我再来一次，我会安排每天做这件事情的上限为2个小时，下限是看一个函数，或者写至少 200 字的相关的记录（比如说心得什么的）。这样慢慢做，也许就能够在不耽误正事的同时，把这件想做的事情给做出来。
+
+正如本书中说的：
+#+begin_quote
+当你慢下来，事情会更加平稳。你有时间去观察，去计划，去协调努力。但是如果太慢，你会陷入僵局或者失去势头。这个道理不仅仅在战场上面适用，在生活与工作中同样适用。日常生活充满了复杂性与不确定性，因此我们在做事情的时候需要设置合理的进度范围，并按照这个范围执行。
+#+end_quote
+** 5 大杠杆，产生“轻松复利”
+复利，即作者提倡的“轻松成果”的反面是什么？作者的答案非常明显，是“线性成果”。什么是线性成果？意为我们的努力得到了一个一次性的产出。此时我们每天都从零开始：如果今天没有努力，今天就没有收获。作者举了几个例子来说明：①、员工的工作；②、死记硬背过了考试；③、比如健身和学习，每次都需要努力“让自己去”做。每次从零开始，没有什么东西累积下来，这个问题一直是我所思考的。作者又在此基础上提出了复利：我们只需要付出一次努力，然后这次努力会源源不断地带来成果。比如说：①、决定每天锻炼一次；②、学会基本原理然后在很多地方可以轻松运用；③、每天习惯性地做同一件事情；
+
+*** 学习：深入原理
+**** 探究原理，摸索共性
+这条纲领要求我们：①、甄别不同的知识的价值：有的知识并不具备持久的价值，而另一些则具备；②、从不同的表象中找到共同的原理，然后使用它 *无数次*
+
+作者举了一个例子，说他曾经连续三天都带了一个披萨回家给老婆；他老婆只有在第一次的时候表现出惊喜，第二次强装惊喜，第三次已经不再惊喜了。他老婆并非不知感恩之人，只是他仅仅注意到了『披萨会使其惊喜』，而没有去找到她如此表现背后的真实原理。应该思考：什么事情是她真正看重的，什么事情是能够让她连续开心超过3天的。这需要预先投入精力，可是一旦找到了，那就可以一次次地应用这个原理。
+
+其实这条纲领与前面的“限定行动的上下限”正是表与里的关系。我们为什么需要设定行动的上下限？因为做成一件事情，需要我们的行动，但是更加重要的事情是我们对这件事情的思考。我们如此需要思考，以至于需要设定行动的上限，来给我们思考的时间与精力。所谓的第一性原理，也是在说这件事情。第一性原理要求我们不要盲从于权威，而凡事都先追问其原因。比如常见的英国卫兵笑话（英国一直在某个楼梯上布置一个卫兵，但是没有人知道为什么。后面查档案发现原来是数百年前这个楼梯刚刚上漆未干，当时安排了一个卫兵提醒来人注意，被一直沿用至今。）就是一个体现。
+**** 种下一颗知识树
+知识树的意思就是：在获取树叶，也就是具体的知识之前，已经了解基本的原理（树干）。换句话说，这条纲领要求我们：不仅仅是记住零散的、孤立的知识，而是有一个主干，然后将所有的知识全部都安置到我们的框架里面。
+
+实际上，大脑的工作原理也是如此。一些导向成果的神经元会被加固，而没有导向成果的神经元则会被废弃。洞察是在广泛地观察和广泛地联系之中产生的。我想起之前第一次学习高性能计算的过程，就是把知识当作一个个孤立的点来学习。每个案例，比如GEMM、Histogram、Conv，我都把他们当成一个个独立的案例。最多也就当成了一个引入新的优化方法的媒介。这样导致的一个后果就是，我会学了后面忘记前面，知识由于不常常被提取从而枯死了。我试图使用 Anki 来加固我的学习，但是使用 Anki 本身需要一些毅力。于是我的动力越来越不足，最后算是半放弃了。
+
+如果让我再来一次，我会先选择一本更好的教材，至少是中文的。这样能够减少我的一些阅读压力。在学习的时候我经常会困惑的事情其实是关于硬件方面的内容。我对于前面的知识有些跑马观花（或者教材本身并没有讲清楚），于是每次提起硬件有哪些资源，而这个算法由于何原因无法充分利用这些资源云云的时候，我的印象都不深刻。实际上，高性能计算其实就是通过算法更高效地利用硬件资源，调度计算任务来达到更快速的计算。因此如果让我重新来过，我会更加关心硬件的参数与算法对这些资源的利用率，而不是具体的案例中使用的优化算法之类的细节。
+
+EDIT：其实，这也和之前所说的“轻松行动”有关。因为我太想要『弯道超车』，所以就不停地 push 自己。想抓住一切眼前的东西，却从来没有想过这样做的意义。所以说，每天给自己留有余地这件事情，非常有必要。
+**** 获取知识，更要创造知识
+这条纲领要求我们把没人做的事情做好：它胜过于把别人都在做的事情做精；
+
+前文所说的，获得知识的方法（探究原理、知识树）可以打开一扇机遇之门，而本小节说，创造知识则可以带来源源不断的机遇。
+*** 提升：借助分享的力量
+把最重要的事情变成最容易的事情，这章讲分享的力量。他说：当我们想要产生深远的影响时，我们就要想办法让我们的听众也成为老师。这个要求其实不简单，首先，我们自己需要懂得这个话题。否则，我们无法以其昏昏，使人昭昭；其次，我们需要抓住要点，让我们的观点能够做到易于传播。然后，这个观点还需要足够有力量，这样众人才会有意愿传播。不过这么抽象地总结其实也是废话。
+
+**** 把听众也变成老师
+这条纲领要求我们：如果想要获得影响力，那就让听众也能够去传授你的观点；也就是说，要激发读者的分享欲，实现裂变式传播，这样才会发展得快。其实，这也会让听众：①、更加认同你所传授的内容。②、将你所传授内容更加内化。
+
+**** 把重要的事，变成最容易学的事
+这条纲领要求我们：把最重要的事情里面的要点给提炼出来，然后用最简单的，10分钟以内能够讲明白的图文给表示出来，然后尝试讲给别人听。
+
+在这条纲领上作者举了两个例子：①、作者自己在创作《精要主义》后，他也在教授别人如何成为一句精要主义者的同时，自己正成为一名更好的精要主义者。这个例子说明，教别人的过程也是一个快速学习的过程。②、一家公司曾经为了公司各个部门之间的思想统一花了很多时间而无成效：高层制定了一项策略，但是在传授过程里，所有人都有自己的理解；后面有人提出『白板传授』，也就是说，把这个策略简化成了一个10分钟以内可以讲完的白板草图，然后学习者不仅仅要学习这项策略，还要学会如何把它传授给别人。最后效果是，所有人都有了一个共同的理解。这说明，如果想要教些什么，那么就只教简化后的重要的内容，这样就能够获得复利成果。
+
+这章其实就是在讲费曼学习法与实践费曼学习法的 Tips。
+*** 自动：重要+高技术；不重要+高时间
+这条纲领要求：将一些重要的事情自动化，而将一些不重要的事情花时间手动处理。这听起来有些反直觉，因为我们下意识会觉得重要的事情都是难做的，因此需要手工操作。而不重要的事情都是繁琐的，所以需要自动化的介入。
+
+这条纲领的意思是说：重要的事情难做，但我们总有办法使他变得更加容易一些。自动化就是一个办法：如果我们每次都需要去有意识地做事情，那么这些行动就是一个个孤立事件，每次都需要我们花费同样的精力去处理。但是如果我们把这件事情自动化，那这件事情就会是一个复利事件，我们能够在这件事情上面节约大量的精力。举例来说的话可以放在下面的章节里面：
+
+**** 利用清单
+这是一个重要的自动化的例子。说实话在本书提及之前我从没有想过清单也算一种『自动化』，而在听说这个说法后，马上就能够想明白。因为列出清单其实就是在自动化『思考』与『回忆』的过程——我们本来那个时候是会抓耳挠腮地回想，忐忑不安地检查遗漏的，但是只要列出了清单，这一切的过程就被节约下来了。
+
+**** 利用自动化技术提前完成思考
+这个例子其实可以用『通过一直在犹豫时去同一家餐厅点同一份菜而节约大量思考的时间』来概括。把一些重要、但是却可以自动化的事情自动化，于是我们便收获了巨大的好处。类比到其它事情，我们还能自动化哪些重要事项呢？总而言之，就是一些重要但是不紧急的事项：
+
+- 比如说体检，复诊，许久之后要交成果的项目等。这些可以通过提前预约好作业时间来自动化。
+- 娱乐：每天安排一个小时做愉悦的事情。
+- 家庭：一些日常的开销，可以提前规划好，然后定期下单。
+**** 总结
+本节其实还是那句话：心智负担最小化。人一天能够操心的事情是有限的，而使用一些固定的模式，把我的操心的事情提前缓存好，那我的操心就能够被使用在更加重要的地方了。
+*** 信任：高信任=高绩效
+这条纲领要求：和高信用的人一起工作，给予他们高信任，然后就能得到高绩效。
+
+从自己的角度来说，思维负担将会很小，若我能把一件事情完全委托给信任的人做。更加重要的事情能够被专注。从环境的角度而言，如果一个团队合作的时候互相信任应该体现在哪些方面？我觉得这种信任首先应该体现在 No Blame 文化，即『对事不对人』。团队成员不会因为害怕自己的能力被怀疑而隐藏自己的错误。
+*** 预防：防患于未然
+这个纲领要求：治于未病。有些事情做好了，那将来很长的一段时间里面都会节约大量的时间。比如说布线系统排好了，那么将省去大量之后来为杂乱的线材烦恼的心力。有些事情难做，并非是因为他本身难做。而是我们没有去采取一些小行动来让生活变得更加轻松。
+** 个人总结
+这本书说到底其实只有几个核心的思想，所有的论述都是围绕着这几个观点展开的。
+1. 放轻松心态，不要『努力』去做什么事情。
+2. 做事情的方法是尽可能地降低心智负担，把需要操心的事情提前操心好、不要一次做太多。
+3. 细水长流。
+4. 了解原理，注意方法。
+
+这本书不是教我们如何偷懒，而是让重要的事情更加轻松地被完成。
+* TODO 《稀缺》 :@article:ReadingNotes:
+越感觉自己稀缺，那就会越稀缺。稀缺无处不在，但是稀缺的感觉却并非如此。是否有过这样的体验？日常被各种各样的事情填满，像驴一样连轴转。下定了决心要断舍离，结果却抵挡不住『诱惑』，只执行了没多久就又像开始那样接下各种各样的任务。感觉无望打破的状态。稀缺会降低心智的『带宽』。稀缺的定义：一种『需求大于资源』的主观感受。
+
+本书立论：稀缺能够让我们得到一点点好处，也就是对所稀缺的事情有更高专注力。但是长远来看，稀缺造成的损失更大。
+
+摘要：本文原景是，总结《稀缺》一书中的观点，并且在每个重要的观点后面附上一段自己的解释与感想。然后再进行一个全文总结与个人评价。
+** 稀缺带来了什么？有好有坏
+*** 稀缺的心态是一切稀缺的根源
+*** 稀缺影响心智带宽，也就是说，稀缺使人变笨
+稀缺的心态能够帮助集中注意力，也就是说，当我们稀缺于的内容与需要做的内容相同的时候，那我们就会专注于此。
+
+但是就如同消防员忙于出任务的时候经常会忘记自身的一些安全措施从而在路上造成安全事故，稀缺会占据我们的心智带宽。如果我们稀缺的与我们当前的目标的并非一致，那么稀缺所占据的这部分心智带宽将影响我们在其它任务上面的表现。从而影响到我们看起来的智商。
+
+*** 稀缺改变人使用额度的方式
+当我们有额度非常大，我们会只取所需。当我们额度小，我们开始权衡。因为稀缺，最后额度小的反而可能会塞入比额度大的时候更多的东西。
+
+*权衡思维* 是指在稀缺状态下，所有的没有被满足的需求俘获了我们的大脑，以致于念念不忘，开始产生了决策难题。这个表述中的陷阱是：这些未被满足的需求未必是我们所必须的。但是正因为稀缺，我们陷入了虚假两难。
+
+#+begin_quote
+自控力并不是我们在诱惑面前保持冷静的能力，而是说我们能够把注意力从诱惑面前移开的能力。但是稀缺捕获了我们，让我们的注意力因为权衡而更加专注于诱惑，让我们更加难以抵挡诱惑。
+#+end_quote
+
+所以面对于稀缺，正确的思维并不是故意用得很少，当然也不是用完他，而是把注意力从稀缺中转移出来，专注于我们真正所需的部分。
+
+1. 当我们有额度非常大的时候，我们会 __________。
+   答案：只取所需
+
+2. /权衡思维/ 是指在稀缺状态下， __________ 俘获了我们的大脑。
+   答案：所有的没有被满足的需求
+
+3. 稀缺会让我们陷入 __________。
+   答案：虚假两难
+
+4. 自控力并不是在诱惑面前保持冷静的能力，而是 __________ 的能力。
+   答案：能够把注意力从诱惑面前移开
+
+5. 面对稀缺，正确的思维是 __________。
+   答案：把注意力从稀缺中转移出来，专注于我们真正所需的部分
+
+*** 余闲如何影响我们的行为？
+还是行李箱的那个例子：在拿上必须的物品之后。对拥有大箱子的人而言，把更多东西，比如说小熊玩偶之类，装进行李箱只是随手为之。但是对于小行李箱而言，这件事情就变成了一个需要去拒绝的诱惑。问题的关键不在于这件物品本身，而是对于拥有空余的人而言，这件事情不会占用其太多的思虑。而对于没有空余的人而言，这件事情则变成了一件大事。他对剩余空间的『精打细算』占用了太多带宽，以至于判断这件物品是否应该被『精打细算』这个念头进入他的脑海之前，他就已经在对这件物品应该如何收纳而精打细算了。
+
+*** 余闲陷阱
+绝大部分时候，我们的余闲也并非绝对的余闲，而只是相对于我们所要装下的物品而言是余闲。有可能我们有节约支出的计划，但是却不肯为 1000 元的支出节约 50 元。因为我们的余闲，这能够节约的 50 元被我们大大地低估了。
+
+节俭与稀缺并非同一回事。节俭之人思考的是，商品是不是有优惠。而穷人则会思考，为了付出相应的金钱，他们将要放弃什么。节俭之人当然也可以这么设想：『如果我每天少喝一杯咖啡，那我省下来的钱可以去巴厘岛旅游三天』，但是穷人想的则是，如果我大吃了这一顿，意味着我这个月本来想买的衣服不够钱买了。于是就是这样，充裕让我们更难体会到金钱的价值了。
+
+这样看来，穷人更加接近经济学意义上的『理性人』。因为他们无论在 100 美元节省 50 美元的叙述下，还是在 1000 美元节省 50 美元的叙述下，都会坚定地选择为了优惠而多费些（同样长的）时间。但是富人只在 100 美元的情况才会愿意为了优惠多花些时间。时间的价格在富人这里，并非是一个恒定的值，而是根据情境变化的值。
+*** 借用陷阱
+当陷入稀缺的时候，我们如果眼前有一个『借用』按钮，使我们能够向未来借用余闲，但是代价是未来将花费更多的余闲。多数人会毫不犹豫地按下。
+
+日理万机的人有一项能力，他们能够判断出自己的时间的价值，从而为各种各样的事务排出轻重缓急。这是他们长期时间紧张而养成的能力。但是这样的能力仅仅是一种利用和评估价值的能力，并不意味着他们能够把自己的时间规划得非常好。因为稀缺带来的『管窥效应』，导致他们往往会比其他人更加在乎眼前的时间不足，从而向未来借时间。这里的借时间，并非专门指加班加点干活，而是指他们会更加专注于手头的事情，而把一些现在不处理将会使日后需要更多时间处理的事情进行拖延。（举个例子，整理会议笔记在会议后马上做可能只需要半小时，但是隔上一周做可能就需要花费一个下午了。）从而造成他们时间越来越不足。这就是稀缺的『借用陷阱』，他反过来进一步强化稀缺。
+
+人们会倾向于把『近在眼前』的事情看得更加重要。这就是所谓的『现时偏见』。我们将未来的利益作为代价，过高地估计即时的利益。这就是之所以做出改变如此困难的原因。
+
+我们可以把重要的事情分成重要紧急与重要不紧急。当我们专注于重要紧急的事情的时候，工作成效能够非常高。但是那些重要但是不紧急的事情，即那些我们永远能够往后推的事情，繁忙的人会下意识地忽略。比如归整物品，我们并非主动选择生活在一片狼藉中，而是因为一次次的轻易的选择。在赶一场会议的时候把信封随手丢在了桌子上，在急着上班的时候把手中的物品随手扔到了沙发上。这些小事最后造成了生活环境的脏乱。虽然这并不紧急，但是却非常重要——肮脏的环境一定会造成低效。因为重要紧急而忽视重要非紧急，这也是一种『借用』。我们增加了今天的时间，却造成未来的成本。这种情况不仅仅在时间上，而且在金钱上也屡见不鲜。
+*** 短视陷阱
+对于有富余的人来说，如果能够得到关于未来的更多消息，他们能够获得更多的利益。但是对于处于稀缺状态的人而言，稀缺的现状已经造成了他的『管窥之见』，即使知道了更多消息他们也无法处理。 *俘获我们的稀缺，就存在于当下，它所产生的管窥负担，令我们带着短视的眼光做人做事。*
+** 如何逃离稀缺？重要的是心态
+*** 危险的杂耍
+
+* TODO 读书方法 :@article:
+摘要：本文分享我的读书方法，对于需要我精读与内化的书，我按照这种方法看。
+* TODO MLIR ODS 笔记 :@technote:ODS:
+:PROPERTIES:
+:EXPORT_FILE_NAME: mlir_ODS_notes
+:END:
+Abstract: 这篇笔记的愿景是：首先，我将 MLIR ODS 的知识粗略地介绍一下。然后再给出我使用 MLIR ODS 定义一个 Op 的例子。我想，这就应该能给读者一些启发了。
+
+MLIR 里面的 Constraints 分成三类：One Element Constraint, Multi Element Constraint, Trait
+
+其中第一类可以理解成类型（Type），他分成元素的类型与Attributes的类型。第二类是多个元素的 Constraint。比如说需要表示多个参数都是同样的类型；第三个是表示这个Op本身的性质，比如说 Pure。这样这些Op就能够被别的程序利用。
+
+** Predication
+一个 Predication 只能是下面两种之一：
+1. ~CPred<"...">~ 表达式，用来表达一个最小的 Predication
+2. 把多数 ~CPred<"...">~ 用逻辑串并联起来的组合 Predication
+
+他使用 ~$_self~ 占位符来表示最后断言作用的对象，用其它的或内置或自定义的 C++ 函数来限定之。
+
+** Type<CPred>
+ODS 里面的类继承关系是：Type -> TypeConstraint -> Constraint，我们使用 Type 的时候，使用的是 Type<Pred>，其中 Pred 是一个断言，而整个 ~Type<Pred>~ 则是一个类型。我们在编程的时候，要特别注意这里的类型与断言不能够搞混了。
+
+* TODO Rust 所有权 :@Rust:OwnerShip:
+:PROPERTIES:
+:EXPORT_FILE_NAME: Rust_ownership_note
+:END:
+abstract: Rust 的所有权管理经常让我头痛。我这里写一些我关于这个主题的抽象层面的感悟，当然，也要补充案例分析。务必详细地分析各种所有权问题。
+
+
+** 下面是我遇到的情况
+1. vec.push(x) 的时候会将 x 的所有权转移到 vec 里面去。其实任何的函数传参，只要不是引用类型传，那就会出现 move
+2. vec.pop() 的时候，会将所 pop 的元素转移出来。实际上，任何的函数返回，都会出现 move
+3. ~if let Some(x) = abc~ 会把 abc 的所有权转移
+4. ~for i in vec~ 会使用 move 语义，将 vec 消费掉（如果不想这样的话，显式使用 iter()，这是借用语义）
+5. 有些函数会在 Document 里面讲，他 consume 了这个东西的所有权。这种时候所有权会发生转移。
+6. 像链表的这种情况：
+   #+begin_src rust
+    let mut pioneer = head.unwrap().next;
+    let temp = pioneer.unwrap().next;
+   #+end_src
+   他会将 pioneer 和 head 的所有权给转移
+
+** 什么时候可能会转移所有权？
+所有权转移发生在任何：
+1. 没有实现 Copy Trait 的类型
+2. 没有显式指定 &var 使用引用类型
+
+的时候。也就是说，如果不指定，则必然会发生所有权转移
+** TIPS
+*** TIPS 默认无法转移 field 的所有权，只转移变量的所有权
+比如上面提到的
+#+begin_src rust
+let mut pioneer = head.unwrap().next;
+let temp = pioneer.unwrap().next;
+#+end_src
+
+这种情况，会把 pioneer 和 head 的所有权给转移掉。
+*** TIPS 若需要转移 filed 所有权，使用 ~take()~
+#+begin_src rust
+remain = n1.next.take();  // take()将n1打断，这样n1只有一个值，返回值是除n1节点外的剩余节点
+                          // node.next是Option<T>
+                          // take()是用默认值替换原有的值，所以n1.next就变为None
+
+#+end_src
+** 如何 think in rust?
+不应该用“赋值”等原来的旧有的语言，而应该使用『所有权转移』，『借出』，『借用』的新语言来思考问题。
+* TODO 发现了一个制作双语对照书籍的项目 :@article:Reposity:
+:PROPERTIES:
+:EXPORT_FILE_NAME: bilingual_book_maker
+:END:
+这里是[[https://github.com/yihong0618/bilingual_book_maker][项目地址]]，支持多种AI。目前我的设想是拿他来制作中英双语对照书？
+* DONE Rust 的 sort_by 应该如何使用？ :@Rust:SortBy:
+CLOSED: [2024-08-20 Tue 18:15]
+:PROPERTIES:
+:EXPORT_FILE_NAME: Rust_sortby_usage
+:END:
+Abstract: SortBy 取一个 ~std::cmp::Ordering~ 对象作为自己的参数，但是关于这一点，我有几个问题。
+1. ~vec.sort_by(|a, b| b.ge(a))~ 会是从小到大，还是从大到小？这个规律是什么？能否有办法快速地找到？这个很重要。
+2. ~cmp::Ordering~ 如何能够支持复合判别条件？比如我的 vec 是一个两元组，按其中的第一维顺序排序，而当第一维的两个元素偏序关系相同的时候，再把这两个元素按第二维逆序排序。这种需求如何在 rust 的 sort_by 函数里实现？
+
+本文最初的设想就是回答上面这两个问题，并给出一些例子。
+
+ANSWER: 这个问题其实并不复杂，我上网找 stack overflow 找到了[[https://stackoverflow.com/questions/67335967/how-to-combine-two-cmp-conditions-in-ordcmp][相关回答]]，它里面说到，我们可以使用 ~.then()~ 来实现
+#+begin_src rust
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.id.cmp(&other.id)
+            .then(self.age.cmp(&other.age))
+    }
+#+end_src
+
+下面是官网关于 ~then()~ 和 ~then_with()~ 的介绍：[[https://doc.rust-lang.org/std/cmp/enum.Ordering.html#method.then]]
+
+然后是这两个的例子
+#+begin_src rust
+#[derive(Debug)]
+struct Student {
+    id : u32,
+    name : String,
+    age : u32,
+}
+
+let mut vec = vec![ Student {
+    id: 1, name: String::from("Li Hua"), age: 18,
+},
+ Student {
+    id: 3, name: String::from("Liu Huan"), age: 19,
+},
+ Student {
+    id: 2, name: String::from("Liu HongTao"), age: 19,
+}];
+
+vec.sort_by(|a, b| a.age.cmp(&b.age).then(a.id.cmp(&b.id)));
+println!("{:?}", vec);
+#+end_src
+
+#+RESULTS:
+: [Student { id: 1, name: "Li Hua", age: 18 }, Student { id: 2, name: "Liu HongTao", age: 19 }, Student { id: 3, name: "Liu Huan", age: 19 }]
+
+注意比较函数会要求一个借用的参数，毕竟他不需要所有权转移才能工作。
+
+另外，关于第一个问题，这个用法就是错的。不应使用 b.ge(a)，而应该使用 b.cmp(a)；若是这样，则从大到小排序。若是 a.cmp(b) 则从小到大排序。
+
+* TODO 刷题笔记
+:PROPERTIES:
+:EXPORT_FILE_NAME: leetcode_notes
+:EXPORT_DATE: 2024-08-17
+:END:
+** 遍历类
+遍历类的难点在哪里？我觉得我很多的时候搞不清下面几点：
+1. 要用几个变量？
+2. 变量的更新时机？有的时候，我们需要在下一轮循环中，更新上一轮循环所涉及概念的变量。
+3. 开始与结束是不是要特殊处理？
+
+其实遍历类的题目难点主要在于，要清楚地描述每个变量的实际意义，在思考过程中不要把他的意义给弄混了。就这么简单。而在整个遍历过程里，我们先思考遍历的中间是什么情况，再考虑开头与结尾的特殊处理。
+
+* 题解笔记 :@Leetcode:@Rust:
+** DONE [2522] 将字符串分割成值不超过 K 的子字符串 :字符串:贪心:
+CLOSED: [2024-08-18 Sun 16:40]
+:PROPERTIES:
+:EXPORT_FILE_NAME: lc2522
+:END:
+首先，最容易想到的解法是暴力法。将所有的情况遍历，同时统计 segments 最小的值。用汉语描述如下：
+1. 将字符串分成两部分，对第一部分的长度 i 进行遍历
+   1. 如果前缀 s[0..i] 小于 k，则
+      1. 返回 f(s[i..n], k) + 1
+   2. 否则直接退出循环
+使用贪心算法？即：在从左到右能够得到最大的值的时候就去得。
+
+看了眼题解，确实是只要向右遍历就可以了。直接贪心可以秒。一次遍历，这个过程要想清楚。
+1. 先得一位数，如果这个数小于，那就直接整个函数返回 -1
+2. 再加一位数，若这个数大于等于 k，则累积最后的结果，并且从 1 开始。如果这个数小于 k，则继续得下一位数。
+** DONE [257] 二叉树的所有路径 :二叉树:
+CLOSED: [2024-08-18 Sun 16:41]
+:PROPERTIES:
+:EXPORT_FILE_NAME: lc257
+:END:
+本题要给出从根节点到叶子节点的所有的路径（任意顺序），可以使用前序遍历法。
+
+如何做呢？我们可以维护一个全局的path，表示当前所经过的路径，和结果向量vec；定义 visit 函数为更新path，且在当前节点是叶子的时候将 path 压入 vec
+
+这道题卡了很久，因为我不知道 rust 的二叉树遍历怎么写。以为要很复杂的处理，其实也没有。
+#+begin_src rust
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::collections::VecDeque;
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct TreeNode {
+    pub val: i32,
+    pub left: Option<Rc<RefCell<TreeNode>>>,
+    pub right: Option<Rc<RefCell<TreeNode>>>,
+}
+
+impl TreeNode {
+    #[inline]
+    pub fn new(val: i32) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(TreeNode {
+            val,
+            left: None,
+            right: None,
+        }))
+    }
+}
+
+fn my_preorder_rec(root: &Option<Rc<RefCell<TreeNode>>>) -> Vec<String> {
+    let mut vec = vec![];
+    let mut rst = vec![];
+    my_preorder_rec_helper(root, &mut vec, &mut rst);
+    rst
+}
+
+fn my_preorder_rec_helper(root: &Option<Rc<RefCell<TreeNode>>>, vec: &mut Vec<i32>, rst: &mut Vec<String>) {
+    if let Some(x) = root {
+        let node = x.borrow();
+        vec.push(node.val);
+        if node.left.is_none() && node.right.is_none() {
+            let mut ss = vec![];
+            vec.iter().for_each(|i| {
+                ss.push(i.to_string());
+            });
+
+            rst.push(ss.join("->"));
+        }
+        my_preorder_rec_helper(&node.left, vec, rst);
+        my_preorder_rec_helper(&node.right, vec, rst);
+        vec.pop();
+    }
+}
+
+fn main() {
+    let root = Rc::new(RefCell::new(TreeNode::new(1)));
+    root.borrow_mut().left = Some(Rc::new(RefCell::new(TreeNode::new(2))));
+    root.borrow_mut().right = Some(Rc::new(RefCell::new(TreeNode::new(3))));
+    root.borrow_mut().left.as_mut().unwrap().borrow_mut().left = Some(Rc::new(RefCell::new(TreeNode::new(4))));
+    root.borrow_mut().left.as_mut().unwrap().borrow_mut().right = Some(Rc::new(RefCell::new(TreeNode::new(5))));
+
+    let result = my_preorder_rec(&Some(root));
+    println!("{:?}", result); // Output: [1, 2, 4, 5, 3]
+}
+#+end_src
+
+#+RESULTS:
+: ["1->2->4", "1->2->5", "1->3"]
+** DONE [3143] 正方形中的最多点数
+CLOSED: [2024-08-19 Mon 12:06]
+:PROPERTIES:
+:EXPORT_FILE_NAME: lc3143
+:END:
+本题为求最多的点数，暴力解法是遍历所有的可能的正方形大小，然后找到直到使得结果不合法的那个大小，直接返回上一次的结果。如何能够在 O(1) 时间内判断合法与否呢？答案是直接排序就好了。
+#+begin_src rust
+pub fn max_points_inside_square(points: Vec<Vec<i32>>, s: String) -> i32 {
+    let mut rst = 0;
+    let mut set = BTreeSet::<char>::new();
+    let mut dic = points
+        .into_iter()
+        .zip(s.chars())
+        .collect::<Vec<(Vec<i32>, char)>>();
+    dic.sort_unstable_by_key(|item| max(item.0[0].abs(), item.0[1].abs()));
+    println!("{:?}", dic);
+    let mut last_distance = max(dic[0].0[0].abs(), dic[0].0[1].abs());
+    let mut pnt_this_dist = 0; // totally points in this distance.
+    for (pos, label) in dic {
+        let distance = max(pos[0].abs(), pos[1].abs());
+        rst += 1;
+        if last_distance == distance {
+            pnt_this_dist += 1;
+        } else {
+            pnt_this_dist = 1;
+        }
+        if set.get(&label).is_some() {
+            return rst - pnt_this_dist;
+        }
+        set.insert(label);
+        last_distance = distance;
+    }
+
+    rst
+}
+#+end_src
+但是这样做出来的效率非常低下。官方解法如下：
+
+#+begin_src rust
+pub fn max_points_inside_square(points: Vec<Vec<i32>>, s: String) -> i32 {
+    const max_possible: i32 = 1000_000_000 + 1;
+    let mut smallest = vec![max_possible; 26];
+    let mut second_small = max_possible;
+
+    for (point, ch) in points.into_iter().zip(s.bytes()) {
+        let (x, y, index) = (point[0], point[1], (ch - b'a') as usize);
+        let dist = x.abs().max(y.abs());
+
+        if dist < smallest[index] {
+            second_small = smallest[index].min(second_small);
+            smallest[index] = dist;
+        } else if dist < second_small {
+            second_small = dist;
+        }
+    }
+
+    smallest.iter().filter(|&&x| x < second_small).count() as i32
+}
+#+end_src
+官方解法的思路：
+如果能够维护每个 tag 的最小距离和所有 tag 的次小距离（即所有 tag 的第二小的距离中最小的那个），则我们只需要统计所有 tag 最小距离比次小距离小的有哪些就行了。于是问题转换成了如何求解最小距离与次小距离。
+
+最小距离易求，次小距离则可以需要分析
+1. 当添加一个新节点的时候，如果此距离比其 tag 的最小要小，则更新最小距离。次小距离则取原先的最小距离与原先的次小距离的最小值。
+2. 若此距离大于等于其 tag 的最小，则还需要判断是不是比次小距离要小。此时此距离 dist 夹在 smallest[index] 和 second_small 中间，故此距离 dist 是比原 second_small 更加 second small 的值。
+** DONE [324] 摆动排序 II :排序:
+CLOSED: [2024-08-20 Tue 17:05]
+:PROPERTIES:
+:EXPORT_FILE_NAME: lc324
+:END:
+https://leetcode.cn/problems/wiggle-sort-ii/description/
+
+一开始的想法：我们如果直接将整个序列进行排序，然后再将其从中分成两半：将其中较大的一半倒序插入较小的一半中，就能够得到所求的结果。因此得到的代码如下：
+#+begin_src rust
+pub fn wiggle_sort(nums: &mut Vec<i32>) {
+    let mut res = nums.clone();
+    res.sort_unstable();
+    let length = nums.len();
+    let mut small_half = res[0..(length+1)/2].iter();
+    let mut great_half = res[(length+1)/2..length].iter().rev();
+
+    (0..length).for_each(|i| {
+        match i % 2 == 0 {
+            true => nums[i] = *small_half.next().unwrap(),
+            false => nums[i] = *great_half.next().unwrap(),
+        }
+    });
+}
+
+fn main() {
+    let mut vec = vec![1,3,2,2,3,1];
+    wiggle_sort(&mut vec);
+    println!("{:?}", vec);
+}
+#+end_src
+
+#+RESULTS:
+: [1, 3, 1, 3, 2, 2]
+
+但是，比如上面的这个测试用例无法通过。正确的解法应该是 [2, 3, 1, 2, 1, 2]，我们把 2 提前，从而得到了正确的结果。然后我发现如果把 ~small_half~ 也给 ~.rev()~ 一下，就可以 ac，如下：
+
+#+begin_src rust
+pub fn wiggle_sort(nums: &mut Vec<i32>) {
+    let mut res = nums.clone();
+    res.sort_unstable();
+    let length = nums.len();
+    let mut small_half = res[0..(length+1)/2].iter().rev();
+    let mut great_half = res[(length+1)/2..length].iter().rev();
+
+    (0..length).for_each(|i| {
+        match i % 2 == 0 {
+            true => nums[i] = *small_half.next().unwrap(),
+            false => nums[i] = *great_half.next().unwrap(),
+        }
+    });
+}
+
+fn main() {
+    let mut vec = vec![1,3,2,2,3,1];
+    wiggle_sort(&mut vec);
+    println!("{:?}", vec);
+}
+#+end_src
+
+这道题中，我遇到的 rust 相关的知识点：
+1. Vec 的所有权在直接用下标范围索引的时候会发生所有权转移。
+   #+begin_src rust
+let vec = vec![1, 2, 3, 4];
+let part_a = vec[0..2];
+let part_b = vec[2..4];
+   #+end_src
+
+   #+RESULTS:
+   : error: Could not compile `cargo8fNQL3`.
+
+   为什么无法编译？因为 part_a 与 part_b 都会尝试把 vec 的所有权给转移走。而不是像我们想象中的那样：part_a 只转移 vec 的前半部分的所有权；part_b 只转移后半部分的；这不对。因为在编译的时候，rust 不知道这个向量多大，所以每次他都会完整转移所有权。
+
+2. 成品代码中，small_half 的类型是什么？他是一个 Item 类型是 ~&i32~ 的 Iterator。引用的 Iterator
+
+   而后面我们调用其 ~.next()~ 方法的时候会返回一个 ~Option<&i32>~ 类型，然后再 unwrap 再解引用得到一个 i32。由于 i32 实现了 Copy Trait，所以这里赋值不会发生所有权的转移。如果说这里的 res 类型是一个没实现 Copy 的类型，那就会报错。
+
+   对于后面这种情况，我们可以再单独分析一下这个问题。比如下面这段代码：
+
+   #+begin_src rust
+#[derive(Debug)]
+struct MyStruct {
+    a:i32, b:i32,
+}
+
+let vec = vec![MyStruct {a:0, b:1}, MyStruct {a:2, b:3}];
+let mut iter = vec.iter();
+let mut v2 = vec![MyStruct {a:2, b:3}, MyStruct {a:0, b:1}];
+v2[0] = *iter.next().unwrap();
+println!("{:?}", v2);
+   #+end_src
+
+   #+RESULTS:
+   : error: Could not compile `cargokhrBCI`.
+
+   如上所示，我们从 vec 借出了一个借用的 iter，然后我们再对其进行解引用，是想把借用的原本指向的对象给 move 过来。 *但是 rust 里，不能够 move 一个借用的解引用值* 。所以说这里会报错。
+
+   正确的做法有两个，一个是直接就不要借用，而是直接消耗掉这个 vec 的所有权，即使用 into_iter 代替 iter，然后下面不用再解引用了。或者是使用 clone()，来表示我这里根据这个借用的 ~&MyStruct~ 克隆一份原对象的值。
+
+   EDIT：好像可以使用 ~std::mem::swap()~ 来实现指针的互换，如下所示：
+   #+begin_src rust
+#[derive(Debug)]
+struct MyStruct {
+    a:i32, b:i32,
+}
+
+let mut vec = vec![MyStruct {a:0, b:1}, MyStruct {a:2, b:3}];
+let mut iter = vec.iter();
+let mut v2 = vec![MyStruct {a:2, b:3}, MyStruct {a:0, b:1}];
+std::mem::swap(&mut v2[0], &mut vec[0]);
+println!("{:?}", v2);
+   #+end_src
+
+   #+RESULTS:
+   : [MyStruct { a: 0, b: 1 }, MyStruct { a: 0, b: 1 }]
+** DONE [2592] 最大化数组的伟大值
+CLOSED: [2024-08-21 Wed 16:33]
+:PROPERTIES:
+:EXPORT_FILE_NAME: lc2592
+:END:
+https://leetcode.cn/problems/maximize-greatness-of-an-array/description/
+
+给你一个下标从 0 开始的整数数组 nums 。你需要将 nums 重新排列成一个新的数组 perm。定义 nums 的 伟大值 为满足 0 <= i < nums.length 且 perm[i] > nums[i] 的下标数目。  请你返回重新排列 nums 后的 最大 伟大值。
+
+解题思路：因为重排后的顺序任意，想要 perm[i] > nums[i]，我们只需要统计每个数字的出现频率就能够统计出最后的结果。比如说[1,3,5,2,1,3,1] 经过排序 -> [1, 1, 1, 2, 3, 3, 5]，然后再使用双指针法求解。总时间复杂度为 O(nlogn)，空间复杂度为 O(1) （原地工作）
+
+#+begin_src rust
+    // let vec be the work array, and nums become the reference array
+    // nums = [1, 1, 1, 2, 3, 3, 5]
+    // vec  = [1, 1, 1, 2, 3, 3, 5]
+    pub fn maximize_greatness(mut nums: Vec<i32>) -> i32 {
+        let mut rst = 0;
+        nums.sort();
+        let (mut i, mut j) = (0, 0);
+        while j != nums.len() && i != nums.len() {
+            if nums[i] >= nums[j] {
+                j += 1;
+            } else {
+                rst += 1;
+                i += 1;
+                j += 1;
+            }
+        }
+        rst
+    }
+#+end_src
+
+上网看题解，这题还有一个数学解法。因为我们可以发现，最后的结果其实就是 nums.len() - m, where m 的含义是单个元素重复次数的最大值。
+
+#+begin_src rust
+use std::collections::HashMap;
+pub fn maximize_greatness(nums: Vec<i32>) -> i32 {
+    let length = nums.len() as i32;
+    let mut mm = HashMap::<i32, i32>::new();
+    nums.iter().for_each(|item| {
+        *mm.entry(*item).or_insert(0) += 1;
+    });
+
+    length - mm.into_iter().max_by_key(|x| x.1).unwrap().1
+}
+fn main() {
+    let vec = vec![1,3,2,2,3,1];
+    println!("{:?}", maximize_greatness(vec));
+}
+#+end_src
+
+但是好像执行效率反而不如上面的解法。
+** DONE [24] 两两交换链表节点
+CLOSED: [2024-08-30 Fri 23:04]
+:PROPERTIES:
+:EXPORT_FILE_NAME: lc24
+:END:
+*** 递归解法
+这道题我没做出来，因为这个所有权问题我没有绕清楚。于是参考了别人的解法。
+#+begin_src rust
+pub fn swap_pairs(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    head.and_then(|mut m| {
+        match m.next {
+            Some(mut n) => {
+                m.next = swap_pairs(n.next);
+                n.next = Some(m);
+                Some(n)
+            },
+            None => Some(m),
+        }
+    })
+}
+#+end_src
+*** 递归解法涉及的Rust知识
+对递归解法，我有两个问题：①、上面既然改变了 next 的值，为何不使用 mut；②、而为什么 mut 可以出自非 mut 的 head ？
+答：简而言之， ~head.and_then()~ 不会修改 head，而是在消耗 head 的所有权，产生新值。
+
+#+begin_src rust
+let a = Some(vec![0, 1, 2]);
+a.and_then(|mut v| { v[0]=1; Some(v) });
+println!("{:?}", a)
+#+end_src
+
+#+RESULTS:
+: error: Could not compile `cargoPvup06`.
+
+这里会编译错误，因为 a 已经在第二行的时候被移动。也就是说，我们确实无法改变 a， ~and_then~ 从 ~Option<_>~ 得到一个可变的 *临时* 内容，然后再对这个临时内容进行修改。最后如果没有新的变量来承接所有权，则生命周期结束、所有权消失。
+*** 迭代解法
+#+begin_src rust
+pub fn swap_pairs(mut head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    let mut curr = &mut head;
+    loop {
+        match curr {
+            None => break,
+            Some(curr_node) => match curr_node.next.take() {
+                None => break,
+                Some(mut next_node) => {
+                    curr_node.next = next_node.next.take();
+                    next_node.next = curr.take();
+                    *curr = Some(next_node);
+                    curr = &mut curr.as_mut().unwrap().next.as_mut().unwrap().next;
+                }
+            }
+        }
+    }
+    head
+}
+#+end_src
+
+上面是在论坛里面看到的迭代解法。下面是在 leetcode.cn 里面看到的迭代解法。其中上面的解法效率和递归解差不多，而下面的解法执行用时超 100%
+
+#+begin_src rust
+pub fn swap_pairs(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    // 创建一个虚拟头节点
+    let mut dummy = Some(Box::new(ListNode { val: -1, next: head }));
+    let mut cur = &mut dummy;
+
+    // 遍历链表，交换节点
+    while let Some(node) = cur.as_mut() {
+        if node.next.is_none() || node.next.as_ref().unwrap().next.is_none() {
+            break;
+        }
+
+        // 节点 a 和 b
+        let mut a = node.next.take().unwrap();
+        let mut b = a.next.take().unwrap();
+
+        // 交换操作
+        a.next = b.next.take();
+        b.next = Some(a);
+        node.next = Some(b);
+
+        // 移动指针
+        cur = &mut node.next.as_mut().unwrap().next;
+    }
+
+    // 返回新的头节点
+    dummy.unwrap().next
+}
+#+end_src
+
+*** 相关Rust知识：
+**** 首先，就是 take 能够获取所有权。
+所以说，a = b.next 和 a = b.next.take 有什么不同呢？其实，不要把 take 看成是什么 black_magic。take 就是一个 option 类的成员函数，他表示将 option 类中的内容所有权转移走，然后这个 option 中内容赋 None。
+
+至于 a = b.next 和 a = b.next.take() 的区别则在于：
+1. 若 b 的类型是引用，即 ~&mut Box<ListNode>~ ：
+   1. 前者编译错误，因为 b 是一个引用，而我们不能够从 b 里面移出值
+   2. 后者合法
+2. 若 b 类型非引用，即 ~Box<ListNode>~ ：
+   1. 前者编译错误，因为我们不可以直接移动 Box 里面的值而不移动整个 Box
+   2. 后者正确，因为我们使用 API 来完成了这个功能。
+**** 然后就是，移动不一定要用 take
+我们也可以使用 Some(a) 的简朴方式来完成对 a 的移动语义。
+** DONE [3153] 所有数对中数位差之和
+CLOSED: [2024-08-31 Sat 00:01]
+:PROPERTIES:
+:EXPORT_FILE_NAME: lc3153
+:END:
+你有一个数组 nums ，它只包含 正 整数，所有正整数的数位长度都 相同 。
+
+两个整数的 数位差 指的是两个整数 相同 位置上不同数字的数目。
+
+请你返回 nums 中 所有 整数对里，数位差之和。
+
+示例 1：
+#+begin_example
+输入：nums = [13,23,12]
+
+输出：4
+
+解释：
+计算过程如下：
+- 13 和 23 的数位差为 1 。
+- 13 和 12 的数位差为 1 。
+- 23 和 12 的数位差为 2 。
+所以所有整数数对的数位差之和为 1 + 1 + 2 = 4 。
+#+end_example
+
+这个问题不能够直接使用暴力统计所有数对数位差的方法。那样需要 O(m * n!) 的时间复杂度。我们还是使用传统思路，将每个数字的数位给缓存下来然后用统计或者数学计算的方法求解。
+
+我们考虑单个位，
+- 假设我们已经有一个字典。
+- 当来了一个新的值的时候，他会产生的影响是：
+  - 对于所有与新值不同的旧值，新值会对总结果贡献 1，也就是说，贡献 (dic.len() - dic.get(val))
+  - 对于相同的旧值，新值贡献0
+
+然后对每个位重复上面的步骤就好了。
+
+#+begin_src rust
+pub fn sum_digit_differences(nums: Vec<i32>) -> i64 {
+    let n = nums.len();
+    let m = nums[0].to_string().len();
+    let mut dic = vec![vec![0; 10]; m];
+    let mut rst = 0;
+    for i in 0..n {
+        let mut x = nums[i];
+        for j in 0..m {
+            let k = ( x % 10 ) as usize;
+            rst += i - dic[j][k];
+            dic[j][k] += 1;
+            x = x / 10;
+        }
+    }
+
+    rst as i64
+}
+#+end_src
+
+还有另一种思路，先看代码：
+#+begin_src rust
+pub fn sum_digit_differences(nums: Vec<i32>) -> i64 {
+    let mut rc = vec![vec![0;10];10];
+    let mut rt = 0;
+    for num in nums {
+        let mut t = num;
+        let mut i = 0;
+        while t > 0 {
+            let p = (t % 10) as usize;
+            for j in 0..10 {
+                if j == p {
+                    continue;
+                }
+                rt += rc[i][j];
+            }
+            rc[i][p] += 1;
+            t /= 10;
+            i += 1;
+        }
+    }
+    rt
+}
+#+end_src
+
+思路：dic缓存的不是每个数字的每位了，而是所有数字的每位。新来一个数字可以直接查看到之前的所有数字上，每个位累积了多少。一共只需要 10x10 大小的空间就好了。从 O(m) 降低到了 O(1)。时间复杂度则仍然是 O(m*n)
+
+感觉第二种解法要好一些。
+** DONE [3127] 构造相同颜色的正方形
+CLOSED: [2024-09-02 Mon 09:55]
+:PROPERTIES:
+:EXPORT_FILE_NAME: lc3127
+:END:
+我们可以将这个 3x3 的矩阵映射到另一个 3x2 矩阵，映射关系是：
+#+begin_src
+output[i][j] = d, when input[i][j] != input[i][j+1]
+             | w, when input[i][j] == input[i][j+1] == white
+             | b, when input[i][j] == input[i][j+1] == black
+#+end_src
+
+然后如果存在一组 output[i][j], output[i+1][j]，符合 1 个 d，1 个非 d，或者两个非 d 但是同 w 或同 b，就输出 true，否则输出 false。代码实现如下：
+#+begin_src rust
+pub fn can_make_square(grid: Vec<Vec<char>>) -> bool {
+    let mut dic = vec![vec![' '; 2]; 3];
+    for i in 0..3 {
+        for j in 0..2 {
+            let ch_l = grid[i][j];
+            let ch_r = grid[i][j + 1];
+            if ch_l != ch_r {
+                dic[i][j] = 'D';
+            } else {
+                dic[i][j] = grid[i][j];
+            }
+
+            if i > 0 && ((dic[i][j] == dic[i-1][j] && dic[i][j] != 'D') || (dic[i][j] == 'D' && dic[i-1][j] != 'D') || (dic[i][j] != 'D' && dic[i-1][j] == 'D'))
+            {
+                return true;
+            }
+        }
+    }
+    false
+}
+#+end_src
+
+有一种更加优雅的解法：
+#+begin_src rust
+impl Solution {
+    pub fn can_make_square(grid: Vec<Vec<char>>) -> bool {
+        grid.windows(2)
+            .map(|x| x[0].windows(2).zip(x[1].windows(2)))
+            .any(|mut x| {
+                x.any(|x| {
+                    x.0.iter()
+                        .chain(x.1.iter()).filter(|&x| x == &'B').count() != 2
+                })
+            })
+    }
+}
+#+end_src
+
+#+begin_quote
+作者：Leaper
+链接：https://leetcode.cn/problems/make-a-square-with-the-same-color/solutions/2898976/yong-die-dai-qi-shi-xian-hua-dong-pin-ji-0lx9/
+#+end_quote
+
+这个解也体现了 rust 的 windows 成员函数的使用方法。确实优雅。
