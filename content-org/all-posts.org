@@ -182,6 +182,31 @@ CLOSED: [2025-02-20 Thu 11:09]
 :EXPORT_FILE_NAME: docker-notes
 :END:
 
+** 要下班了，但有个命令要跑 10 个小时，但我已经跑了 5 个小时
+不想明天上班再跑 10 小时了。我该怎么办？
+
+一个比较笨的办法（也只有这个办法了）：
+- 按下 ~ctrl-z~ ，把这个命令挂起到后台。
+  - 如果是 vscode 终端里面，这个快捷键可能会被 vscode 自己的快捷键顶掉。
+  - 一般不会被顶掉，但可能有插件会占用这个快捷键。暂时禁用一下就好了。
+- 在 tmux 终端里输入 ~bg~
+  它会在后台继续被挂起的任务
+- 输入 ~disown~
+  它会将此任务从终端中分离，使得终端被关闭后任务仍然能继续运行。如下示意图：
+  #+begin_src
++ /bin/bash *
+  +- my_program (background)
+
+-- disown -->
++ /bin/bash *
++ my_program (background)
+
+-- kill /bin/bash -->
++ my_program (background)
+  #+end_src
+
+这样做的问题是，你没有办法追踪这个命令的 stdout 和 stderr 了。 +除非你是 C 语言领域大神，用 gdb attatch 到这个命令上面，修改其 stdout 的文件描述符。+
+
 ** Docker
 注意一件事情：在大部分情况下，使用 ~docker exec -it container_name /bin/bash~ 来 attatch 到 docker 而不是 ~docker attatch~
 
