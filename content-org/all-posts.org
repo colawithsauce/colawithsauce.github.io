@@ -183,11 +183,7 @@ CLOSED: [2025-02-20 Thu 11:09]
 :END:
 
 ** Docker
-可以把 docker 的使用分成两种
-1. 当作脚本使用
-2. 当作终端使用
-
-在做开发时的大部分情况下，使用 docker 是第二种使用方式。这个时候注意一件事情，使用 ~docker exec -it container_name /bin/bash~ 来 attatch 到 docker 而不是 ~docker attatch~
+注意一件事情：在大部分情况下，使用 ~docker exec -it container_name /bin/bash~ 来 attatch 到 docker 而不是 ~docker attatch~
 
 因为 docker 启动的方式一般是 ~docker run xxx -it /bin/bash~ ，其会启动一个命令 ~/bin/bash~ ，如下图所示：
 #+begin_src
