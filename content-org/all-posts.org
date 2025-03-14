@@ -387,6 +387,15 @@ CLOSED: [2025-02-20 Thu 11:09]
 - [ ] 温泉幼精箱根酱
 
 * TODO AffineMap 是什么？怎么用？
+* DONE 记录一些写 MLIR 的时候踩的坑
+CLOSED: [2025-03-14 Fri 17:45]
+:PROPERTIES:
+:EXPORT_FILE_NAME: bugs_in_using_mlir
+:END:
+** 在 Pattern 里面忘记写 ~return success()~
+会导致报一个非常难以发现的栈错误，栈错误的位置在库函数调用完 matchAndRewrite 之后，也就是 xxxConversion.h 里面的 ~return matchAndRewrite(...)~ 后面报错。
+
+这个问题很隐蔽，调了我半个多小时。
 * TODO 占坑：MLIR 的 Pattern Rewrite 机制
 主要讨论的问题：
 1. RewritePattern 和 ConversionPattern 有什么区别？
