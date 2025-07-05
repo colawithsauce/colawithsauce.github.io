@@ -423,6 +423,21 @@ sudo ln -sf ../../bin/distcc /usr/lib/distcc/x86_64-pc-linux-gnu-g++
 sudo ln -sf /usr/bin/x86_64-linux-gnu-gcc /usr/local/bin/x86_64-pc-linux-gnu-gcc
 sudo ln -sf /usr/bin/x86_64-linux-gnu-g++ /usr/local/bin/x86_64-pc-linux-gnu-g++
 #+end_src
+*** 远程版本与本地版本不一致
+在我的 host 侧，默认的 gcc 版本是 gcc-13，但是 guest 侧是 gcc-14。按照 gentoo 官网上面的说法[fn:1]，不匹配会导致问题，因此我配置了一下 host 侧的编译套件设置：
+
+#+begin_src shell
+sudo apt install gcc-14 g++-14
+#+end_src
+
+并且让 gcc 链接到更高的版本
+#+begin_src shell
+sudo ln -sf /usr/bin/x86_64-linux-gnu-gcc-14 /usr/local/bin/x86_64-pc-linux-gnu-gcc
+sudo ln -sf /usr/bin/x86_64-linux-gnu-g++-14 /usr/local/bin/x86_64-pc-linux-gnu-g++
+#+end_src
+
+这样，编译就没有潜在的问题了。
+
 
 * 书单/补番列表/其他的列表 :@List:
 ** 书单
@@ -1652,3 +1667,7 @@ CLOSED: [2025-07-02 Wed 10:37]
 
 西蜀之去南海，不知几千里也，僧之富者不能至，而贫者至焉。人之立志，顾不如蜀鄙之僧哉？是故聪与敏，可恃而不可恃也；自恃其聪与敏而不学者，自败者也。昏与庸，可限而不可限也；不自限其昏与庸而力学不倦者，自立者也。
 #+end_quote
+
+* Footnotes
+
+[fn:1] https://wiki.gentoo.org/wiki/Distcc 见 Mixed GCC Verions 一节

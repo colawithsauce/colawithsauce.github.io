@@ -190,3 +190,23 @@ sudo ln -sf ../../bin/distcc /usr/lib/distcc/x86_64-pc-linux-gnu-g++
 sudo ln -sf /usr/bin/x86_64-linux-gnu-gcc /usr/local/bin/x86_64-pc-linux-gnu-gcc
 sudo ln -sf /usr/bin/x86_64-linux-gnu-g++ /usr/local/bin/x86_64-pc-linux-gnu-g++
 ```
+
+
+### 远程版本与本地版本不一致 {#远程版本与本地版本不一致}
+
+在我的 host 侧，默认的 gcc 版本是 gcc-13，但是 guest 侧是 gcc-14。按照 gentoo 官网上面的说法[^fn:1]，不匹配会导致问题，因此我配置了一下 host 侧的编译套件设置：
+
+```shell
+sudo apt install gcc-14 g++-14
+```
+
+并且让 gcc 链接到更高的版本
+
+```shell
+sudo ln -sf /usr/bin/x86_64-linux-gnu-gcc-14 /usr/local/bin/x86_64-pc-linux-gnu-gcc
+sudo ln -sf /usr/bin/x86_64-linux-gnu-g++-14 /usr/local/bin/x86_64-pc-linux-gnu-g++
+```
+
+这样，编译就没有潜在的问题了。
+
+[^fn:1]: <https://wiki.gentoo.org/wiki/Distcc> 见 Mixed GCC Verions 一节
