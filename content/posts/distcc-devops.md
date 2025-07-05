@@ -209,4 +209,24 @@ sudo ln -sf /usr/bin/x86_64-linux-gnu-g++-14 /usr/local/bin/x86_64-pc-linux-gnu-
 
 这样，编译就没有潜在的问题了。
 
+
+## UPDATE：同时支持 ipv4 与 ipv6 {#update-同时支持-ipv4-与-ipv6}
+
+把 `/etc/default/distcc` 更新一下就好了：
+
+```shell
+# xxx 改成自己的 ipv6 地址前缀
+ALLOWEDNETS="::ffff:192.168.1.0/24 ::ffff:100.122.154.1 127.0.0.1 xxxx:xxxx:xxxx:xxxx::/64"
+
+LISTENER="::"
+```
+
+效果如下：
+
+```text
+distccd[785370] (dcc_job_summary) client: ::ffff:192.168.1.3:57832 COMPILE_OK exit:0 sig:0 core:0 ret:0 time:36ms x86_64-pc-linux-gnu-gcc main.c
+```
+
+原来 ipv6 是可以兼容 ipv4 的……
+
 [^fn:1]: <https://wiki.gentoo.org/wiki/Distcc> 见 Mixed GCC Verions 一节
