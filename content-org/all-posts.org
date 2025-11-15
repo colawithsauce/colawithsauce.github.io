@@ -1660,7 +1660,7 @@ impl Solution {
 #+end_quote
 
 这个解也体现了 rust 的 windows 成员函数的使用方法。确实优雅。
-* 春花秋月 :@article:春花秋月:
+* 春花秋月 :@diary:春花秋月:
 ** DONE 2025-07-01
 CLOSED: [2025-07-02 Wed 00:03]
 :PROPERTIES:
@@ -1833,7 +1833,12 @@ CLOSED: [2025-07-12 Sat 11:17]
 #+begin_quote
 具有完美天性的人的标志是根本不会长期把自己的敌人，不幸，失误看得很重，因为他们有丰富的塑造力，修复力，治愈力，还有一种忘却力。这种人只要一耸肩，便会抖落许多啃噬他的寄生虫，只有在这种情况下，爱敌人才是可能的——假设这个世上真有人会爱敌人。
 #+end_quote
-
+** DONE 2025-11-13
+CLOSED: [2025-11-13 Thu 23:17]
+:PROPERTIES:
+:EXPORT_FILE_NAME: 2025-11-13_my_thoughts
+:END:
+今天在我前几天刚买的 macbook air 上面配了 emacs，居然用不了 emacs-rime，好难受。
 * Footnotes
 
 [fn:1] https://wiki.gentoo.org/wiki/Distcc 见 Mixed GCC Verions 一节

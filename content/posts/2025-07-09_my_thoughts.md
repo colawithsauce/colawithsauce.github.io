@@ -3,7 +3,7 @@ title = 2025-07-09
 author = ["colawithsauce"]
 date = 2025-07-09T13:27:00+08:00
 tags = ["春花秋月"]
-categories = ["article"]
+categories = ["diary"]
 draft = false
 +++
 

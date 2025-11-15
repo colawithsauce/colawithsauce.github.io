@@ -21,6 +21,12 @@ name = "tags"
 url = "/tags/"
 weight = 20
 
+[[menu.main]]
+identifier = "DIARY"
+name = "日记"
+url = "/categories/diary/"
+weight = 30
+
 [params.homeInfoParams]
 Title = "我是 colawithsauce"
 Content = "24岁，是学生。现在读研，主攻 HPC 方向。这里会分享一切我想分享的话题。"
