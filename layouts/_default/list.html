@@ -44,7 +44,19 @@
 {{- $pages = where site.RegularPages "Type" "in" site.Params.mainSections }}
 {{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true"  }}
 {{- /* 在主页过滤掉 diary 分类的文章 */ -}}
-{{- $pages = where $pages "Params.categories" "!=" (slice "diary") }}
+{{- $filteredPages := slice }}
+{{- range $pages }}
+  {{- $isDiary := false }}
+  {{- if .Params.categories }}
+    {{- if in .Params.categories "diary" }}
+      {{- $isDiary = true }}
+    {{- end }}
+  {{- end }}
+  {{- if not $isDiary }}
+    {{- $filteredPages = $filteredPages | append . }}
+  {{- end }}
+{{- end }}
+{{- $pages = $filteredPages }}
 {{- end }}
 
 {{- $paginator := .Paginate $pages }}
