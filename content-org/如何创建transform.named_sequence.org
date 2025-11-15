@@ -1,6 +1,6 @@
 #+title: 如何在 MLIR 中优雅地创建 transform.named_sequence
 #+hugo_custom_front_matter: :mathjax false
-#+hugo_tags: MLIR, Transform Dialect
+#+hugo_tags: "MLIR" "Transform Dialect"
 #+hugo_categories: Programming
 #+DATE: [2025-11-14 Thu 22:00]
 

@@ -2,7 +2,7 @@
 title = "如何在 MLIR 中优雅地创建 transform.named_sequence"
 author = ["温曾年"]
 date = 2025-11-14T22:00:00+08:00
-tags = ["MLIR", [",", "Transform"], "Dialect"]
+tags = ["MLIR", "Transform Dialect"]
 categories = ["Programming"]
 draft = false
 mathjax = false
